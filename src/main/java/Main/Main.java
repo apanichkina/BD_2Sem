@@ -2,6 +2,7 @@ package Main; /**
  * Created by olegermakov on 14.09.15.
  */
 
+import Admin.AdminServlet;
 import Connection.AccountService;
 import WebAnswer.FrontEnd;
 import org.eclipse.jetty.server.Server;
@@ -29,6 +30,7 @@ public class Main {
         Servlet signup = new SignUpServlet(accountService);
         Servlet logout = new LogOut(accountService);
         Servlet profile = new ProfileServlet(accountService);
+        Servlet admin = new AdminServlet(accountService);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.addServlet(new ServletHolder(frontend), "/authform");
@@ -36,6 +38,7 @@ public class Main {
         context.addServlet(new ServletHolder(signup), "/api/v1/auth/signup");
         context.addServlet(new ServletHolder(logout), "/api/v1/auth/logout");
         context.addServlet(new ServletHolder(profile), "/");
+        context.addServlet(new ServletHolder(admin), "/admin");
 
         Server server = new Server(port);
         server.setHandler(context);

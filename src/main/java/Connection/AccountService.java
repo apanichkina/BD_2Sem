@@ -11,6 +11,12 @@ public class AccountService {
         private Map<String, UserProfile> users = new HashMap<>();
         private Map<String, UserProfile> sessions = new HashMap<>();
 
+        private static final UserProfile Admin = new UserProfile("Admin","pass","pass");
+
+        public AccountService(){
+            addUser(Admin.getLogin(), Admin);
+        }
+
         public boolean addUser(String userName, UserProfile userProfile) {
             if (users.containsKey(userName))
                 return false;
@@ -39,5 +45,13 @@ public class AccountService {
 
         public UserProfile getSessions(String sessionId) {
             return sessions.get(sessionId);
+        }
+
+        public int getRegisteredCount(){
+            return users.size();
+        }
+
+        public int getLoggedCount(){
+            return sessions.size();
         }
 }

@@ -65,7 +65,7 @@ public class SignInServlet extends HttpServlet {
                 pageVariables.put("status", "error");
                 pageVariables.put("description", "no such user");
             }
-            else if(userInput.getPassword() == password) {
+            else if(userInput.getPassword().equals(password)) {
                 pageVariables.put("status","ok");
                 pageVariables.put("name", name == null ? "" : name);
                 pageVariables.put("password", password == null ? "" : password);
