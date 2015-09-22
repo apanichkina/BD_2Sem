@@ -5,21 +5,22 @@ package WebAnswer;
 
 import org.json.simple.JSONObject;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 public class JsonGenerator {
     /* TODO */
-    public static String getJson(ArrayList<String> data)
+    public static String getJson(Map<String, Object> data)
     {
         JSONObject result = new JSONObject();
         result.put("status", data.get(0));
 
         int size = data.size();
 
-        if(size > 1) {
-            result.put("login", data.get(1));
-            result.put("password", data.get(2));
+        for (Map.Entry<String, Object> entry : data.entrySet())
+        {
+            result.put(entry.getKey(),entry.getValue());
         }
         return result.toString();
     }

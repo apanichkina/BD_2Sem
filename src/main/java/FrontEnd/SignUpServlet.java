@@ -1,25 +1,25 @@
 package FrontEnd;
 
-        import Connection.*;
-        import WebAnswer.*;
-        import org.eclipse.jetty.server.session.JDBCSessionManager;
+import Connection.AccountService;
+import Connection.UserProfile;
+import WebAnswer.JsonGenerator;
+import WebAnswer.PageGenerator;
 
-        import javax.servlet.ServletException;
-        import javax.servlet.http.HttpServlet;
-        import javax.servlet.http.HttpServletRequest;
-        import javax.servlet.http.HttpServletResponse;
-
-        import java.io.IOException;
-        import java.util.HashMap;
-        import java.util.Map;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Created by iHelos on 21.09.2015.
+ * Created by olegermakov on 22.09.15.
  */
-public class SignInServlet extends HttpServlet {
+public class SignUpServlet extends HttpServlet {
     private AccountService accountService;
 
-    public SignInServlet(AccountService accountService) {
+    public SignUpServlet(AccountService accountService) {
         this.accountService = accountService;
     }
 
@@ -28,14 +28,11 @@ public class SignInServlet extends HttpServlet {
 
         Map<String, Object> pageVariables = new HashMap<>();
         UserProfile profile = accountService.getSessions(request.getSession().getId());
-        if (profile!= null) {
-            response.getWriter().println(PageGenerator.getPage("SignIn.html", pageVariables));
+        if (profile != null) {
+            response.getWriter().println(PageGenerator.getPage("SignUp.html", pageVariables));
         }
         else
         {
-            pageVariables.put("status", "error");
-            pageVariables.put("description","already signed in");
-
             response.setContentType("application/json; charset=utf-8");
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }

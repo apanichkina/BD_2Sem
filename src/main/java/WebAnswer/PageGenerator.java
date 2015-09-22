@@ -12,10 +12,10 @@ import java.io.Writer;
 import java.util.Map;
 
 public class PageGenerator {
-    private static final String HTML_DIR = "templates";
-    private static final Configuration CFG = new Configuration();
+    static private String HTML_DIR = "templates";
+    static private Configuration CFG = new Configuration();
 
-    public static String getPage(String filename, Map<String, Object> data) {
+    static public String getPage(String filename, Map<String, Object> data) {
         Writer stream = new StringWriter();
         try
         {

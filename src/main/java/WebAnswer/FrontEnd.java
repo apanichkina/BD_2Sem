@@ -50,16 +50,16 @@ public class FrontEnd extends HttpServlet {
         }
 
 
-        ArrayList<String> pageVariables = new ArrayList<>();
+        HashMap<String, Object> pageVariables = new HashMap<String, Object>();
         if (login==null || login =="" || password == null || password == "")
         {
-            pageVariables.add( "error");
+            pageVariables.put("status", "error");
         }
         else
         {
-            pageVariables.add("ok");
-            pageVariables.add(login);
-            pageVariables.add(password);
+            pageVariables.put("status", "ok");
+            pageVariables.put("login", login);
+            pageVariables.put("password", password);
         }
 
         response.setContentType("application/json; charset=utf-8");
