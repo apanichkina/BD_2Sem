@@ -1,4 +1,4 @@
-/**
+package WebAnswer; /**
  * Created by olegermakov on 14.09.15.
  */
 

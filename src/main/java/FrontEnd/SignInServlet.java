@@ -14,7 +14,7 @@ package FrontEnd;
 /**
  * Created by iHelos on 21.09.2015.
  */
-public class SignInServlet {
+public class SignInServlet extends HttpServlet {
     private UserAccount accountService;
 
     public SignInServlet(UserAccount accountService) {
