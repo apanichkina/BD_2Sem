@@ -5,14 +5,15 @@
     <title>Authorization</title>
 </head>
 <body>
-<form action="/api/v1/signin" method="POST">
+<form action="/api/v1/auth/signin" method="POST">
     Вход:
     <br>
-    Email: <input type="text" name="email"/>
+    Name: <input type="text" name="name"/>
     <br>
     Password: <input type="text" name="password"/>
     <br>
     <input type="submit" value="Войти">
 </form>
+<a href="/api/v1/auth/signup">Регистрация</a>
 </body>
 </html>

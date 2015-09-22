@@ -26,12 +26,16 @@ public class Main {
         AccountService accountService = new AccountService();
 
         Servlet signin = new SignInServlet(accountService);
-        Servlet signup = new SignInServlet(accountService);
+        Servlet signup = new SignUpServlet(accountService);
+        Servlet logout = new LogOut(accountService);
+        Servlet profile = new ProfileServlet(accountService);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.addServlet(new ServletHolder(frontend), "/authform");
         context.addServlet(new ServletHolder(signin), "/api/v1/auth/signin");
-        context.addServlet(new ServletHolder(signin), "/api/v1/auth/signup");
+        context.addServlet(new ServletHolder(signup), "/api/v1/auth/signup");
+        context.addServlet(new ServletHolder(logout), "/api/v1/auth/logout");
+        context.addServlet(new ServletHolder(profile), "/");
 
         Server server = new Server(port);
         server.setHandler(context);

@@ -28,11 +28,14 @@ public class SignUpServlet extends HttpServlet {
 
         Map<String, Object> pageVariables = new HashMap<>();
         UserProfile profile = accountService.getSessions(request.getSession().getId());
-        if (profile != null) {
+        if (profile == null) {
             response.getWriter().println(PageGenerator.getPage("SignUp.html", pageVariables));
         }
         else
         {
+            pageVariables.put("status", "error");
+            pageVariables.put("description","already signed up");
+
             response.setContentType("application/json; charset=utf-8");
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
@@ -45,29 +48,34 @@ public class SignUpServlet extends HttpServlet {
         Map<String, Object> pageVariables = new HashMap<>();
 
         String name = request.getParameter("name");
+        String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        if (name == null || name == "" || password == null || password == "")
+        if (name == null || email == null || password == null || name == "" || password == "")
         {
             pageVariables.put("status", "error");
+            pageVariables.put("description", "empty field");
         }
         else
         {
             response.setStatus(HttpServletResponse.SC_OK);
 
-            UserProfile userInput = accountService.getUser(name);
-            if(userInput.getPassword() == password) {
-                pageVariables.put("status","ok");
-                pageVariables.put("name", name == null ? "" : name);
-                pageVariables.put("password", password == null ? "" : password);
-                accountService.addSessions(request.getSession().getId(), userInput);
+            UserProfile newUser = new UserProfile(name, password, email);
+
+            if(accountService.getUser(name) == null) {
+                accountService.addUser(newUser.getLogin(), newUser);
+                accountService.addSessions(request.getSession().getId(), newUser);
+                pageVariables.put("status", "ok");
+                pageVariables.put("name", name);
+                pageVariables.put("password", email);
+                pageVariables.put("description", "new user created");
             }
-            else {
+            else
+            {
                 pageVariables.put("status", "error");
-                pageVariables.put("description", "wrong answer");
+                pageVariables.put("description", "User with this name already created");
             }
         }
-
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

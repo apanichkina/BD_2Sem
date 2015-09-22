@@ -22,6 +22,17 @@ public class AccountService {
             sessions.put(sessionId, userProfile);
         }
 
+        public boolean deleteSessions(String sessionId) {
+            if(getSessions(sessionId)!=null) {
+                sessions.remove(sessionId);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public UserProfile getUser(String userName) {
             return users.get(userName);
         }

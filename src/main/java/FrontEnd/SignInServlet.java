@@ -28,7 +28,7 @@ public class SignInServlet extends HttpServlet {
 
         Map<String, Object> pageVariables = new HashMap<>();
         UserProfile profile = accountService.getSessions(request.getSession().getId());
-        if (profile!= null) {
+        if (profile == null) {
             response.getWriter().println(PageGenerator.getPage("SignIn.html", pageVariables));
         }
         else
@@ -53,13 +53,19 @@ public class SignInServlet extends HttpServlet {
         if (name == null || name == "" || password == null || password == "")
         {
             pageVariables.put("status", "error");
+            pageVariables.put("description", "empty field");
         }
         else
         {
             response.setStatus(HttpServletResponse.SC_OK);
 
             UserProfile userInput = accountService.getUser(name);
-            if(userInput.getPassword() == password) {
+            if(userInput == null)
+            {
+                pageVariables.put("status", "error");
+                pageVariables.put("description", "no such user");
+            }
+            else if(userInput.getPassword() == password) {
                 pageVariables.put("status","ok");
                 pageVariables.put("name", name == null ? "" : name);
                 pageVariables.put("password", password == null ? "" : password);
@@ -67,10 +73,9 @@ public class SignInServlet extends HttpServlet {
             }
             else {
                 pageVariables.put("status", "error");
-                pageVariables.put("description", "wrong answer");
+                pageVariables.put("description", "wrong password");
             }
         }
-
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }
