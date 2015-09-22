@@ -2,15 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4a2786c4-9d49-49dc-a51b-91d6c4feb751" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/templates/Admin.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/Admin/AdminServlet.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/Admin/CloseThread.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/Connection/AccountService.java" afterPath="$PROJECT_DIR$/src/main/java/Connection/AccountService.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/Main/Main.java" afterPath="$PROJECT_DIR$/src/main/java/Main/Main.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/templates/ProfilePage.html" afterPath="$PROJECT_DIR$/templates/ProfilePage.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/templates/SignIn.html" afterPath="$PROJECT_DIR$/templates/SignIn.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/FrontEnd/SignInServlet.java" afterPath="$PROJECT_DIR$/src/main/java/FrontEnd/SignInServlet.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/templates/SignUp.html" afterPath="$PROJECT_DIR$/templates/SignUp.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/Admin/AdminServlet.java" afterPath="$PROJECT_DIR$/src/main/java/Admin/AdminServlet.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Server.iws" />
@@ -101,10 +93,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SignInServlet.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="SignInServlet.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/FrontEnd/SignInServlet.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.9493671">
+            <state vertical-scroll-proportion="0.0">
               <caret line="67" column="59" selection-start-line="67" selection-start-column="59" selection-end-line="67" selection-end-column="59" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -135,11 +127,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AdminServlet.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="AdminServlet.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/Admin/AdminServlet.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="46" column="78" selection-start-line="46" selection-start-column="78" selection-end-line="46" selection-end-column="78" />
+            <state vertical-scroll-proportion="0.8951175">
+              <caret line="49" column="31" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="31" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#557#558#0" expanded="true" />
@@ -203,10 +195,10 @@
         <option value="$PROJECT_DIR$/templates/SignIn.html" />
         <option value="$PROJECT_DIR$/src/main/java/Admin/CloseThread.java" />
         <option value="$PROJECT_DIR$/templates/Admin.html" />
-        <option value="$PROJECT_DIR$/src/main/java/Admin/AdminServlet.java" />
         <option value="$PROJECT_DIR$/src/main/java/Main/Main.java" />
         <option value="$PROJECT_DIR$/src/main/java/Connection/AccountService.java" />
         <option value="$PROJECT_DIR$/src/main/java/FrontEnd/SignInServlet.java" />
+        <option value="$PROJECT_DIR$/src/main/java/Admin/AdminServlet.java" />
       </list>
     </option>
   </component>
@@ -731,7 +723,7 @@
       <option name="number" value="Default" />
       <updated>1442783166747</updated>
       <workItem from="1442783170568" duration="2692000" />
-      <workItem from="1442852743429" duration="15251000" />
+      <workItem from="1442852743429" duration="15567000" />
     </task>
     <task id="LOCAL-00001" summary="SignIn">
       <created>1442900751801</created>
@@ -757,11 +749,17 @@
       <option name="project" value="LOCAL" />
       <updated>1442911610045</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Profile completed;&#10;Admin panel added;">
+      <created>1442915757452</created>
+      <option name="number" value="00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1442915757452</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="17943000" />
+    <option name="totallyTimeSpent" value="18259000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
@@ -809,7 +807,8 @@
     <MESSAGE value="SignIn completed" />
     <MESSAGE value="SignUp completed + some changes in profile" />
     <MESSAGE value="LogOut completed" />
-    <option name="LAST_COMMIT_MESSAGE" value="LogOut completed" />
+    <MESSAGE value="Profile completed;&#10;Admin panel added;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Profile completed;&#10;Admin panel added;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -827,13 +826,13 @@
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/FrontEnd/SignInServlet.java</url>
-          <line>61</line>
+          <url>file://$PROJECT_DIR$/src/main/java/Admin/AdminServlet.java</url>
+          <line>47</line>
           <properties />
-          <option name="timeStamp" value="7" />
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="8" />
+      <option name="time" value="9" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="Application">
@@ -1106,18 +1105,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/Admin/AdminServlet.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="46" column="78" selection-start-line="46" selection-start-column="78" selection-end-line="46" selection-end-column="78" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#557#558#0" expanded="true" />
-            <element signature="e#609#610#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/Connection/AccountService.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1140,12 +1127,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/FrontEnd/SignInServlet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.9493671">
+        <state vertical-scroll-proportion="0.0">
           <caret line="67" column="59" selection-start-line="67" selection-start-column="59" selection-end-line="67" selection-end-column="59" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#643#644#0" expanded="true" />
             <element signature="e#695#696#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/Admin/AdminServlet.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.8951175">
+          <caret line="49" column="31" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="31" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#557#558#0" expanded="true" />
+            <element signature="e#609#610#0" expanded="true" />
           </folding>
         </state>
       </provider>

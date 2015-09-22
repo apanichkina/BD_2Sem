@@ -46,13 +46,15 @@ public class AdminServlet extends HttpServlet {
         Map<String, Object> pageVariables = new HashMap<>();
         if(accountService.getSessions(request.getSession().getId()) != null && accountService.getSessions(request.getSession().getId()).getLogin()=="Admin") {
             String timeString = request.getParameter("shutdown");
-            if (timeString != null) {
+            if (timeString == null || timeString == "")
+                timeString = "0";
+
                 int timeMS = Integer.valueOf(timeString);
                 System.out.print("Server will be down after: " + timeMS + " ms");
                 CloseThread.sleep(timeMS);
                 System.out.print("\nShutdown");
                 System.exit(0);
-            }
+
         }
         else
         {
