@@ -22,11 +22,11 @@ package FrontEnd;
  */
 public class SignInServlet extends HttpServlet {
     private AccountService accountService;
-
     public SignInServlet(AccountService accountService) {
         this.accountService = accountService;
     }
 
+    //Страничка для входа
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
 
@@ -39,7 +39,6 @@ public class SignInServlet extends HttpServlet {
         {
             pageVariables.put("status", "error");
             pageVariables.put("description","already signed in");
-
             response.setContentType("application/json; charset=utf-8");
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }

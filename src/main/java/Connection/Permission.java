@@ -8,12 +8,15 @@ import java.util.ArrayList;
  * Created by olegermakov on 23.09.15.
  */
 public class Permission {
+
+    //Проверка, админ ли ты
     public static final void AdminPermission(String SessionID, AccountService CurrentBase) throws PostException {
         UserProfile tempUser = CurrentBase.getSessions(SessionID);
         if(tempUser == null || tempUser.getLogin()!="Admin")
             throw new PostException("401");
     }
 
+    //Проверка, залогинен ли
     public static final void NotLoggedIn(String SessionID, AccountService CurrentBase) throws PostException {
         UserProfile tempUser = CurrentBase.getSessions(SessionID);
         if(tempUser == null)
@@ -28,6 +31,7 @@ public class Permission {
     }
     */
 
+    //Проверка, все ли параметры, которые нужны, заполнены
     public static final void RequestParams(ArrayList<Object> Objects) throws PostException {
         for(Object i : Objects) {
             if (i == null)

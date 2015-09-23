@@ -18,12 +18,15 @@ import java.util.Map;
 /**
  * Created by olegermakov on 22.09.15.
  */
+
+//Сервлет для профиля
 public class ProfileServlet extends HttpServlet {
     private AccountService accountService;
-
     public ProfileServlet(AccountService accountService) {
         this.accountService = accountService;
     }
+
+    //Возвращает страницу
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
 

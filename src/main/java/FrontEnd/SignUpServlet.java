@@ -17,13 +17,15 @@ import java.util.Map;
 /**
  * Created by olegermakov on 22.09.15.
  */
+
+//Сервлет для регистрации
 public class SignUpServlet extends HttpServlet {
     private AccountService accountService;
-
     public SignUpServlet(AccountService accountService) {
         this.accountService = accountService;
     }
 
+    //Возвращает страничку
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
 
@@ -43,6 +45,7 @@ public class SignUpServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
+    //Отправляет данные для регистрации
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
 
