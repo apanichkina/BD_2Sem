@@ -13,7 +13,7 @@ import javax.servlet.Servlet;
 import FrontEnd.*;
 public class Main {
 
-
+    private final static String APIpath = "/api/v1/auth/";
 
     public static void main(String[] args) throws Exception {
         int port = 8080;
@@ -33,12 +33,13 @@ public class Main {
         Servlet admin = new AdminServlet(accountService);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.addServlet(new ServletHolder(frontend), "/authform");
-        context.addServlet(new ServletHolder(signin), "/api/v1/auth/signin");
-        context.addServlet(new ServletHolder(signup), "/api/v1/auth/signup");
-        context.addServlet(new ServletHolder(logout), "/api/v1/auth/logout");
-        context.addServlet(new ServletHolder(profile), "/");
-        context.addServlet(new ServletHolder(admin), "/admin");
+
+        context.addServlet(new ServletHolder(frontend), APIpath + "authform");
+        context.addServlet(new ServletHolder(signin), APIpath + "signin");
+        context.addServlet(new ServletHolder(signup), APIpath + "signup");
+        context.addServlet(new ServletHolder(logout), APIpath +  "logout");
+        context.addServlet(new ServletHolder(profile), APIpath +  "");
+        context.addServlet(new ServletHolder(admin), APIpath + "admin");
 
         Server server = new Server(port);
         server.setHandler(context);

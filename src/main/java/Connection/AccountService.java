@@ -1,5 +1,8 @@
 package Connection;
 
+import Exception.PostException;
+import javafx.geometry.Pos;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,33 +17,39 @@ public class AccountService {
         private static final UserProfile Admin = new UserProfile("Admin","pass","pass");
 
         public AccountService(){
-            addUser(Admin.getLogin(), Admin);
+            try {
+                addUser(Admin.getLogin(), Admin);
+            }
+            catch (PostException e) {}
         }
 
-        public boolean addUser(String userName, UserProfile userProfile) {
+        public void addUser(String userName, UserProfile userProfile) throws PostException{
             if (users.containsKey(userName))
-                return false;
+                throw new PostException("ololo");
+            else
             users.put(userName, userProfile);
-            return true;
         }
 
         public void addSessions(String sessionId, UserProfile userProfile) {
             sessions.put(sessionId, userProfile);
         }
 
-        public boolean deleteSessions(String sessionId) {
+        public boolean deleteSessions(String sessionId) throws PostException{
             if(getSessions(sessionId)!=null) {
                 sessions.remove(sessionId);
                 return true;
             }
             else
             {
-                return false;
+                throw new PostException("202");
             }
         }
 
-        public UserProfile getUser(String userName) {
-            return users.get(userName);
+        public UserProfile getUser(String userName) throws PostException{
+            UserProfile tempUser = users.get(userName);
+            if (tempUser == null)
+                throw new PostException("NO USER");
+            return tempUser;
         }
 
         public UserProfile getSessions(String sessionId) {

@@ -1,9 +1,11 @@
 package FrontEnd;
 
 import Connection.AccountService;
+import Connection.Permission;
 import Connection.UserProfile;
 import WebAnswer.JsonGenerator;
 import WebAnswer.PageGenerator;
+import Exception.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -27,14 +29,16 @@ public class ProfileServlet extends HttpServlet {
 
         Map<String, Object> pageVariables = new HashMap<>();
         UserProfile profile = accountService.getSessions(request.getSession().getId());
-        if (profile == null) {
-            response.getWriter().println(PageGenerator.getPage("SignIn.html", pageVariables));
-        }
-        else
-        {
+
+        try{
+            Permission.NotLoggedIn(request.getSession().getId(), accountService);
             pageVariables.put("name", profile.getLogin());
             pageVariables.put("email", profile.getEmail());
             response.getWriter().println(PageGenerator.getPage("ProfilePage.html", pageVariables));
+        }
+        catch(PostException e)
+        {
+            pageVariables.put("code", e.getMessage());
         }
         response.setStatus(HttpServletResponse.SC_OK);
     }

@@ -2,6 +2,8 @@ package FrontEnd;
 
 import Connection.AccountService;
 import WebAnswer.JsonGenerator;
+import Exception.PostException;
+import javafx.geometry.Pos;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,10 +13,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
  * Created by olegermakov on 22.09.15.
  */
-public class LogOut extends HttpServlet {
+public class LogOut extends HttpServlet  {
     private AccountService accountService;
 
     public LogOut(AccountService accountService) {
@@ -23,12 +26,20 @@ public class LogOut extends HttpServlet {
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
         Map<String, Object> pageVariables = new HashMap<>();
-        if(accountService.deleteSessions(request.getSession().getId())) {
+
+        /*if(accountService.deleteSessions(request.getSession().getId())) {
             pageVariables.put("status","ok");
         }
         else{
             pageVariables.put("status", "error");
             pageVariables.put("description", "already not logged in");
+        }*/
+        try{
+            accountService.deleteSessions(request.getSession().getId());
+        }
+        catch (PostException e)
+        {
+            pageVariables.put("status", e.getMessage());
         }
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }

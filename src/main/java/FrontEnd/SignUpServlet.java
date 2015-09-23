@@ -1,15 +1,16 @@
 package FrontEnd;
 
-import Connection.AccountService;
-import Connection.UserProfile;
+import Connection.*;
 import WebAnswer.JsonGenerator;
 import WebAnswer.PageGenerator;
+import Exception.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,30 +52,24 @@ public class SignUpServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        if (name == null || email == null || password == null || name == "" || password == "")
-        {
-            pageVariables.put("status", "error");
-            pageVariables.put("description", "empty field");
-        }
-        else
-        {
+        ArrayList<Object> RequestedParams = new ArrayList<>();
+        RequestedParams.add(name);
+        RequestedParams.add(password);
+
+        try {
+            Permission.RequestParams(RequestedParams);
             response.setStatus(HttpServletResponse.SC_OK);
-
             UserProfile newUser = new UserProfile(name, password, email);
-
-            if(accountService.getUser(name) == null) {
-                accountService.addUser(newUser.getLogin(), newUser);
-                accountService.addSessions(request.getSession().getId(), newUser);
-                pageVariables.put("status", "ok");
-                pageVariables.put("name", name);
-                pageVariables.put("password", email);
-                pageVariables.put("description", "new user created");
-            }
-            else
-            {
-                pageVariables.put("status", "error");
-                pageVariables.put("description", "User with this name already created");
-            }
+            accountService.addUser(newUser.getLogin(), newUser);
+            accountService.addSessions(request.getSession().getId(), newUser);
+            pageVariables.put("status", "ok");
+            pageVariables.put("name", name);
+            pageVariables.put("password", email);
+            pageVariables.put("description", "new user created");
+        }
+        catch (PostException e)
+        {
+            pageVariables.put("code", e.getMessage());
         }
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }

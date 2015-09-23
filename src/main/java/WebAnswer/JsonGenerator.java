@@ -14,14 +14,17 @@ public class JsonGenerator {
     public static String getJson(Map<String, Object> data)
     {
         JSONObject result = new JSONObject();
-        result.put("status", data.get(0));
-
+        JSONObject body = new JSONObject();
+        result.put("code", data.get("code"));
+        data.remove("code");
+        result.put("body", body);
         int size = data.size();
 
         for (Map.Entry<String, Object> entry : data.entrySet())
         {
-            result.put(entry.getKey(),entry.getValue());
+            body.put(entry.getKey(), entry.getValue());
         }
-        return result.toString();
+
+        return result.toJSONString();
     }
 }

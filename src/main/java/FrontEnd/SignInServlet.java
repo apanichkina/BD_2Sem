@@ -2,6 +2,9 @@ package FrontEnd;
 
         import Connection.*;
         import WebAnswer.*;
+        import Exception.*;
+
+        import javafx.geometry.Pos;
         import org.eclipse.jetty.server.session.JDBCSessionManager;
 
         import javax.servlet.ServletException;
@@ -10,6 +13,7 @@ package FrontEnd;
         import javax.servlet.http.HttpServletResponse;
 
         import java.io.IOException;
+        import java.util.ArrayList;
         import java.util.HashMap;
         import java.util.Map;
 
@@ -49,32 +53,26 @@ public class SignInServlet extends HttpServlet {
 
         String name = request.getParameter("name");
         String password = request.getParameter("password");
+        ArrayList<Object> RequestedParams = new ArrayList<>();
+        RequestedParams.add(name);
+        RequestedParams.add(password);
 
-        if (name == null || name == "" || password == null || password == "")
-        {
-            pageVariables.put("status", "error");
-            pageVariables.put("description", "empty field");
-        }
-        else
-        {
+        try{
+            Permission.RequestParams(RequestedParams);
             response.setStatus(HttpServletResponse.SC_OK);
 
             UserProfile userInput = accountService.getUser(name);
-            if(userInput == null)
-            {
-                pageVariables.put("status", "error");
-                pageVariables.put("description", "no such user");
-            }
-            else if(userInput.getPassword().equals(password)) {
-                pageVariables.put("status","ok");
-                pageVariables.put("name", name == null ? "" : name);
-                pageVariables.put("password", password == null ? "" : password);
-                accountService.addSessions(request.getSession().getId(), userInput);
-            }
-            else {
-                pageVariables.put("status", "error");
-                pageVariables.put("description", "wrong password");
-            }
+            if(!userInput.getPassword().equals(password))
+                throw new PostException("1010");
+
+            pageVariables.put("status","ok");
+            pageVariables.put("name", name == null ? "" : name);
+            pageVariables.put("password", password == null ? "" : password);
+            accountService.addSessions(request.getSession().getId(), userInput);
+        }
+        catch (PostException e)
+        {
+            pageVariables.put("code", e.getMessage());
         }
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
