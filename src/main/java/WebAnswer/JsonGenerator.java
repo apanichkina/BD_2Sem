@@ -10,7 +10,6 @@ import java.util.Map;
 
 
 public class JsonGenerator {
-    /* TODO */
     public static String getJson(Map<String, Object> data)
     {
         JSONObject result = new JSONObject();
@@ -18,7 +17,6 @@ public class JsonGenerator {
         result.put("code", data.get("code"));
         data.remove("code");
         result.put("body", body);
-        int size = data.size();
 
         for (Map.Entry<String, Object> entry : data.entrySet())
         {

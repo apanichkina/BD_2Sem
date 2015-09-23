@@ -25,7 +25,7 @@ public class AccountService {
 
         public void addUser(String userName, UserProfile userProfile) throws PostException{
             if (users.containsKey(userName))
-                throw new PostException("ololo");
+                throw new PostException("405");
             else
             users.put(userName, userProfile);
         }
@@ -41,7 +41,7 @@ public class AccountService {
             }
             else
             {
-                throw new PostException("202");
+                throw new PostException("418");
             }
         }
 
