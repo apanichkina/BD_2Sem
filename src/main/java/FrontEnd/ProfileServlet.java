@@ -40,6 +40,6 @@ public class ProfileServlet extends HttpServlet {
         {
             pageVariables.put("code", e.getMessage());
         }
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

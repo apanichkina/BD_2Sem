@@ -26,14 +26,6 @@ public class LogOut extends HttpServlet  {
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
         Map<String, Object> pageVariables = new HashMap<>();
-
-        /*if(accountService.deleteSessions(request.getSession().getId())) {
-            pageVariables.put("status","ok");
-        }
-        else{
-            pageVariables.put("status", "error");
-            pageVariables.put("description", "already not logged in");
-        }*/
         try{
             accountService.deleteSessions(request.getSession().getId());
         }
