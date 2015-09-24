@@ -1,1 +1,1 @@
-java -classpath Project.jar example.Main 8080
+java -classpath Server.jar Main.Main 8080

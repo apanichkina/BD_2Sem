@@ -33,7 +33,7 @@ public class AdminServlet extends HttpServlet {
             Permission.AdminPermission(request.getSession().getId(), accountService);
             pageVariables.put("RegCount", accountService.getRegisteredCount());
             pageVariables.put("LogCount", accountService.getLoggedCount());
-            response.getWriter().println(PageGenerator.getPage("admin.html", pageVariables));
+            response.getWriter().println(PageGenerator.getPage("Admin.html", pageVariables));
         }
         catch (PostException e)
         {
