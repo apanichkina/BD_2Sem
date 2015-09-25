@@ -1,7 +1,6 @@
 package Connection;
 
-import Exception.PostException;
-import javafx.geometry.Pos;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,53 +13,54 @@ public class AccountService {
         private Map<String, UserProfile> users = new HashMap<>();
         private Map<String, UserProfile> sessions = new HashMap<>();
 
-        private static final UserProfile Admin = new UserProfile("Admin","pass","pass");
+        private static final UserProfile admin = new UserProfile("Admin","pass","pass");
 
         public AccountService(){
-            try {
-                addUser(Admin.getLogin(), Admin);
-            }
-            catch (PostException e) {}
+            addUser(admin.getLogin(), admin);
         }
 
-        public void addUser(String userName, UserProfile userProfile) throws PostException{
-            if (users.containsKey(userName))
-                throw new PostException("405");
-            else
+        public boolean addUser(@Nullable String userName, UserProfile userProfile) {
+            if (users != null && users.containsKey(userName))
+                return false;
+            assert users != null;
             users.put(userName, userProfile);
+            return true;
         }
 
         public void addSessions(String sessionId, UserProfile userProfile) {
             sessions.put(sessionId, userProfile);
         }
 
-        public boolean deleteSessions(String sessionId) throws PostException{
+        public boolean deleteSessions(String sessionId) {
             if(getSessions(sessionId)!=null) {
                 sessions.remove(sessionId);
                 return true;
             }
             else
             {
-                throw new PostException("418");
+                return false;
             }
         }
 
-        public UserProfile getUser(String userName) throws PostException{
-            UserProfile tempUser = users.get(userName);
-            if (tempUser == null)
-                throw new PostException("NO USER");
-            return tempUser;
+        @Nullable
+        public UserProfile getUser(String userName) {
+            assert users != null;
+            return users.get(userName);
         }
 
-        public UserProfile getSessions(String sessionId) {
+        @Nullable
+        public UserProfile getSessions(@Nullable String sessionId) {
+            assert sessions != null;
             return sessions.get(sessionId);
         }
 
         public int getRegisteredCount(){
+            assert users != null;
             return users.size();
         }
 
         public int getLoggedCount(){
+            assert sessions != null;
             return sessions.size();
         }
 }

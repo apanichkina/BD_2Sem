@@ -7,13 +7,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import Connection.AccountService;
-import Connection.Permission;
 import WebAnswer.JsonGenerator;
 import WebAnswer.PageGenerator;
-import Exception.PostException;
-import javafx.geometry.Pos;
 
 /**
  * Created by olegermakov on 22.09.15.
@@ -21,49 +19,56 @@ import javafx.geometry.Pos;
 public class AdminServlet extends HttpServlet {
     private AccountService accountService;
 
-    public AdminServlet(AccountService accountService) {
-        this.accountService = accountService;
+    public AdminServlet(AccountService accountservice) {
+        this.accountService = accountservice;
     }
+    @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
         Map<String, Object> pageVariables = new HashMap<>();
+        assert request != null;
+        assert accountService != null;
+        if(accountService.getSessions(request.getSession().getId()) != null && accountService.getSessions(request.getSession().getId()).getLogin()=="Admin") {
+            assert response != null;
+            response.setContentType("text/html;charset=utf-8");
+            response.setStatus(HttpServletResponse.SC_OK);
 
-        try{
-            Permission.NotLoggedIn(request.getSession().getId(), accountService);
-            Permission.AdminPermission(request.getSession().getId(), accountService);
             pageVariables.put("RegCount", accountService.getRegisteredCount());
             pageVariables.put("LogCount", accountService.getLoggedCount());
-            response.getWriter().println(PageGenerator.getPage("admin.html", pageVariables));
+            response.getWriter().println(PageGenerator.getPage("Admin.html", pageVariables));
         }
-        catch (PostException e)
+        else
         {
-            pageVariables.put("code", e.getMessage());
+            pageVariables.put("status", "error");
+            pageVariables.put("description", "no permission");
+            assert response != null;
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
-
     }
+    @Override
     public void doPost(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
+        assert response != null;
         response.setContentType("text/html;charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
         Map<String, Object> pageVariables = new HashMap<>();
-
-        try {
-            Permission.AdminPermission(request.getSession().getId(), accountService);
+        assert request != null;
+        assert accountService != null;
+        if(accountService.getSessions(request.getSession().getId()) != null && accountService.getSessions(request.getSession().getId()).getLogin()=="Admin") {
             String timeString = request.getParameter("shutdown");
-            if (timeString == null || timeString == "")
-                timeString = "0";
-
+            if (timeString == null || Objects.equals(timeString, ""))
+                timeString = "1";
             int timeMS = Integer.valueOf(timeString);
             System.out.print("Server will be down after: " + timeMS + " ms");
             CloseThread.sleep(timeMS);
             System.out.print("\nShutdown");
             System.exit(0);
         }
-        catch (PostException e)
+        else
         {
-            pageVariables.put("code", e.getMessage());
+            pageVariables.put("status", "error");
+            pageVariables.put("description", "no permission");
+            response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
-        response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

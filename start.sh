@@ -1,1 +1,0 @@
-java -classpath Project.jar example.Main 8080

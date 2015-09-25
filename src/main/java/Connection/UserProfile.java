@@ -1,12 +1,14 @@
 package Connection;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Created by iHelos on 20.09.2015.
  */
 public class UserProfile {
-        private String login;
-        private String password;
-        private String email;
+        String login;
+        String password;
+        String email;
 
         public UserProfile(String login, String password, String email) {
             this.login = login;
@@ -14,14 +16,17 @@ public class UserProfile {
             this.email = email;
         }
 
+        @Nullable
         public String getLogin() {
             return login;
         }
 
+        @Nullable
         public String getPassword() {
             return password;
         }
 
+        @Nullable
         public String getEmail() {
             return email;
         }

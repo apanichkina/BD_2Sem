@@ -2,9 +2,6 @@ package FrontEnd;
 
         import Connection.*;
         import WebAnswer.*;
-        import Exception.*;
-
-        import javafx.geometry.Pos;
         import org.eclipse.jetty.server.session.JDBCSessionManager;
 
         import javax.servlet.ServletException;
@@ -13,7 +10,6 @@ package FrontEnd;
         import javax.servlet.http.HttpServletResponse;
 
         import java.io.IOException;
-        import java.util.ArrayList;
         import java.util.HashMap;
         import java.util.Map;
 
@@ -27,12 +23,16 @@ public class SignInServlet extends HttpServlet {
         this.accountService = accountService;
     }
 
+    @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
+        assert request != null;
+        assert accountService != null;
         UserProfile profile = accountService.getSessions(request.getSession().getId());
         if (profile == null) {
+            assert response != null;
             response.getWriter().println(PageGenerator.getPage("SignIn.html", pageVariables));
         }
         else
@@ -40,40 +40,52 @@ public class SignInServlet extends HttpServlet {
             pageVariables.put("status", "error");
             pageVariables.put("description","already signed in");
 
+            assert response != null;
             response.setContentType("application/json; charset=utf-8");
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
+    @Override
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
 
+        assert request != null;
         String name = request.getParameter("name");
         String password = request.getParameter("password");
-        ArrayList<Object> RequestedParams = new ArrayList<>();
-        RequestedParams.add(name);
-        RequestedParams.add(password);
 
-        try{
-            Permission.RequestParams(RequestedParams);
+        if (name == null || name == "" || password == null || password == "")
+        {
+            pageVariables.put("status", "error");
+            pageVariables.put("description", "empty field");
+        }
+        else
+        {
+            assert response != null;
             response.setStatus(HttpServletResponse.SC_OK);
 
+            assert accountService != null;
             UserProfile userInput = accountService.getUser(name);
-            if(!userInput.getPassword().equals(password))
-                throw new PostException("1010");
-
-            pageVariables.put("status","ok");
-            pageVariables.put("name", name == null ? "" : name);
-            pageVariables.put("password", password == null ? "" : password);
-            accountService.addSessions(request.getSession().getId(), userInput);
+            if(userInput == null)
+            {
+                pageVariables.put("status", "error");
+                pageVariables.put("description", "no such user");
+            }
+            else if(userInput.getPassword().equals(password)) {
+                pageVariables.put("status","ok");
+                pageVariables.put("name", name);
+                pageVariables.put("password", password);
+                accountService.addSessions(request.getSession().getId(), userInput);
+            }
+            else {
+                pageVariables.put("status", "error");
+                pageVariables.put("description", "wrong password");
+            }
         }
-        catch (PostException e)
-        {
-            pageVariables.put("code", e.getMessage());
-        }
+        assert response != null;
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

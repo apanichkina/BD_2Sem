@@ -1,11 +1,9 @@
 package FrontEnd;
 
 import Connection.AccountService;
-import Connection.Permission;
 import Connection.UserProfile;
 import WebAnswer.JsonGenerator;
 import WebAnswer.PageGenerator;
-import Exception.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -21,25 +19,28 @@ import java.util.Map;
 public class ProfileServlet extends HttpServlet {
     private AccountService accountService;
 
-    public ProfileServlet(AccountService accountService) {
-        this.accountService = accountService;
+    public ProfileServlet(AccountService accountservice) {
+        this.accountService = accountservice;
     }
+    @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
+        assert accountService != null;
+        assert request != null;
         UserProfile profile = accountService.getSessions(request.getSession().getId());
-
-        try{
-            Permission.NotLoggedIn(request.getSession().getId(), accountService);
+        if (profile == null) {
+            assert response != null;
+            response.getWriter().println(PageGenerator.getPage("SignIn.html", pageVariables));
+        }
+        else
+        {
             pageVariables.put("name", profile.getLogin());
             pageVariables.put("email", profile.getEmail());
+            assert response != null;
             response.getWriter().println(PageGenerator.getPage("ProfilePage.html", pageVariables));
         }
-        catch(PostException e)
-        {
-            pageVariables.put("code", e.getMessage());
-        }
-        response.getWriter().println(JsonGenerator.getJson(pageVariables));
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 }

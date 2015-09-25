@@ -16,7 +16,6 @@ import WebAnswer.*;
 public class FrontEnd extends HttpServlet {
 
     private String login = "";
-    private String password = "";
 
     @Override
     public void doGet(HttpServletRequest request,
@@ -38,7 +37,7 @@ public class FrontEnd extends HttpServlet {
                        HttpServletResponse response) throws ServletException, IOException {
 
         login = request.getParameter("login");
-        password = request.getParameter("password");
+        String password = request.getParameter("password");
 
 
         response.setContentType("text/html;charset=utf-8");
