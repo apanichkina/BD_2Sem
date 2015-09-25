@@ -28,11 +28,13 @@ public class AccountService {
         }
 
         public void addSessions(String sessionId, UserProfile userProfile) {
+            assert sessions != null;
             sessions.put(sessionId, userProfile);
         }
 
         public boolean deleteSessions(String sessionId) {
             if(getSessions(sessionId)!=null) {
+                assert sessions != null;
                 sessions.remove(sessionId);
                 return true;
             }
