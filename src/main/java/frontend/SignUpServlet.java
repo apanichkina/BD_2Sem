@@ -1,9 +1,10 @@
-package FrontEnd;
+package frontend;
 
-import Connection.AccountService;
-import Connection.UserProfile;
-import WebAnswer.JsonGenerator;
-import WebAnswer.PageGenerator;
+import connection.AccountService;
+import connection.UserProfile;
+import webanswer.JsonGenerator;
+import webanswer.PageGenerator;
+import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,20 +20,18 @@ import java.util.Map;
 public class SignUpServlet extends HttpServlet {
     private AccountService accountService;
 
-    public SignUpServlet(AccountService accountservice) {
-        this.accountService = accountservice;
+    public SignUpServlet(@NotNull AccountService current_accountService) {
+        this.accountService = current_accountService;
     }
 
     @Override
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException, IOException {
+    public void doGet(@NotNull HttpServletRequest request,
+                      @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
-        assert accountService != null;
-        assert request != null;
         UserProfile profile = accountService.getSessions(request.getSession().getId());
         if (profile == null) {
-            assert response != null;
+
             response.getWriter().println(PageGenerator.getPage("SignUp.html", pageVariables));
         }
         else
@@ -40,7 +39,6 @@ public class SignUpServlet extends HttpServlet {
             pageVariables.put("status", "error");
             pageVariables.put("description","already signed up");
 
-            assert response != null;
             response.setContentType("application/json; charset=utf-8");
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
@@ -48,29 +46,27 @@ public class SignUpServlet extends HttpServlet {
     }
 
     @Override
-    public void doPost(HttpServletRequest request,
-                       HttpServletResponse response) throws ServletException, IOException {
+    public void doPost(@NotNull HttpServletRequest request,
+                       @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
 
-        assert request != null;
         String name = request.getParameter("name");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
         if (name == null || email == null || password == null || name == "" || password == "")
         {
-            pageVariables.put("status", "error");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            pageVariables.put("status", "404");
             pageVariables.put("description", "empty field");
         }
         else
         {
-            assert response != null;
             response.setStatus(HttpServletResponse.SC_OK);
 
             UserProfile newUser = new UserProfile(name, password, email);
 
-            assert accountService != null;
             if(accountService.getUser(name) == null) {
                 accountService.addUser(newUser.getLogin(), newUser);
                 accountService.addSessions(request.getSession().getId(), newUser);
@@ -85,7 +81,7 @@ public class SignUpServlet extends HttpServlet {
                 pageVariables.put("description", "User with this name already created");
             }
         }
-        assert response != null;
+
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

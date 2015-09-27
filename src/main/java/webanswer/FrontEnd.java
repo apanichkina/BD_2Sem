@@ -1,4 +1,4 @@
-package WebAnswer; /**
+package webanswer; /**
  * Created by olegermakov on 14.09.15.
  */
 
@@ -7,11 +7,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import WebAnswer.*;
 
 public class FrontEnd extends HttpServlet {
 
@@ -49,13 +46,11 @@ public class FrontEnd extends HttpServlet {
         }
 
 
-        HashMap<String, Object> pageVariables = new HashMap<String, Object>();
-        if (login==null || login =="" || password == null || password == "")
-        {
+        HashMap<String, Object> pageVariables = new HashMap<>();
+        if (login==null || login =="" || password == null || password == "") {
             pageVariables.put("status", "error");
         }
-        else
-        {
+        else {
             pageVariables.put("status", "ok");
             pageVariables.put("login", login);
             pageVariables.put("password", password);

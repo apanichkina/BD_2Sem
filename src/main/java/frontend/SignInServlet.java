@@ -1,8 +1,9 @@
-package FrontEnd;
+package frontend;
 
-        import Connection.*;
-        import WebAnswer.*;
-        import org.eclipse.jetty.server.session.JDBCSessionManager;
+import connection.*;
+        import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import webanswer.*;
 
         import javax.servlet.ServletException;
         import javax.servlet.http.HttpServlet;
@@ -19,20 +20,19 @@ package FrontEnd;
 public class SignInServlet extends HttpServlet {
     private AccountService accountService;
 
-    public SignInServlet(AccountService accountService) {
-        this.accountService = accountService;
+    public SignInServlet(@NotNull AccountService current_accountService) {
+        this.accountService = current_accountService;
     }
 
+
     @Override
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException, IOException {
+    public void doGet(@NotNull HttpServletRequest request,
+                      @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
-        assert request != null;
-        assert accountService != null;
+
         UserProfile profile = accountService.getSessions(request.getSession().getId());
         if (profile == null) {
-            assert response != null;
             response.getWriter().println(PageGenerator.getPage("SignIn.html", pageVariables));
         }
         else
@@ -40,7 +40,6 @@ public class SignInServlet extends HttpServlet {
             pageVariables.put("status", "error");
             pageVariables.put("description","already signed in");
 
-            assert response != null;
             response.setContentType("application/json; charset=utf-8");
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }

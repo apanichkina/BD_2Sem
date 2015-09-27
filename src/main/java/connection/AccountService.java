@@ -1,40 +1,41 @@
-package Connection;
+package connection;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by iHelos on 20.09.2015.
  */
 public class AccountService {
 
+        @NotNull
         private Map<String, UserProfile> users = new HashMap<>();
-        private Map<String, UserProfile> sessions = new HashMap<>();
+        @NotNull
+        private Map<String, UserProfile> sessions = new ConcurrentHashMap<>();
 
-        private static final UserProfile admin = new UserProfile("Admin","pass","pass");
+        private static final UserProfile ADMIN = new UserProfile("admin","pass","pass");
 
         public AccountService(){
-            addUser(admin.getLogin(), admin);
+            addUser(ADMIN.getLogin(), ADMIN);
         }
 
-        public boolean addUser(@Nullable String userName, UserProfile userProfile) {
-            if (users != null && users.containsKey(userName))
+        public boolean addUser(@NotNull String userName, UserProfile userProfile) {
+            if (users.containsKey(userName))
                 return false;
-            assert users != null;
             users.put(userName, userProfile);
             return true;
         }
 
-        public void addSessions(String sessionId, UserProfile userProfile) {
-            assert sessions != null;
+        public void addSessions(@NotNull String sessionId, UserProfile userProfile) {
             sessions.put(sessionId, userProfile);
         }
 
         public boolean deleteSessions(String sessionId) {
             if(getSessions(sessionId)!=null) {
-                assert sessions != null;
                 sessions.remove(sessionId);
                 return true;
             }
@@ -46,23 +47,19 @@ public class AccountService {
 
         @Nullable
         public UserProfile getUser(String userName) {
-            assert users != null;
             return users.get(userName);
         }
 
         @Nullable
-        public UserProfile getSessions(@Nullable String sessionId) {
-            assert sessions != null;
+        public UserProfile getSessions(String sessionId) {
             return sessions.get(sessionId);
         }
 
         public int getRegisteredCount(){
-            assert users != null;
             return users.size();
         }
 
         public int getLoggedCount(){
-            assert sessions != null;
             return sessions.size();
         }
 }

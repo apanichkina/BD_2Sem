@@ -1,5 +1,6 @@
-package Connection;
+package connection;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -10,18 +11,18 @@ public class UserProfile {
         String password;
         String email;
 
-        public UserProfile(String login, String password, String email) {
-            this.login = login;
-            this.password = password;
-            this.email = email;
+        public UserProfile(String Login, String Password, String Email) {
+            this.login = Login;
+            this.password = Password;
+            this.email = Email;
         }
 
-        @Nullable
+        @NotNull
         public String getLogin() {
             return login;
         }
 
-        @Nullable
+        @NotNull
         public String getPassword() {
             return password;
         }

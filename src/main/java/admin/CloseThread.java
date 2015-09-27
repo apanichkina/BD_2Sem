@@ -1,4 +1,4 @@
-package Admin;
+package admin;
 
 /**
  * Created by olegermakov on 22.09.15.

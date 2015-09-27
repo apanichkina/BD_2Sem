@@ -1,9 +1,9 @@
-package FrontEnd;
+package frontend;
 
-import Connection.AccountService;
-import Connection.UserProfile;
-import WebAnswer.JsonGenerator;
-import WebAnswer.PageGenerator;
+import connection.AccountService;
+import connection.UserProfile;
+import org.jetbrains.annotations.NotNull;
+import webanswer.PageGenerator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,16 +19,15 @@ import java.util.Map;
 public class ProfileServlet extends HttpServlet {
     private AccountService accountService;
 
-    public ProfileServlet(AccountService accountservice) {
-        this.accountService = accountservice;
+    public ProfileServlet(@NotNull AccountService current_accountService) {
+        this.accountService = current_accountService;
     }
     @Override
-    public void doGet(HttpServletRequest request,
+    public void doGet(@NotNull HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
-        assert accountService != null;
-        assert request != null;
+
         UserProfile profile = accountService.getSessions(request.getSession().getId());
         if (profile == null) {
             assert response != null;

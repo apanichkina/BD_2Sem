@@ -1,4 +1,4 @@
-package Admin;
+package admin;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,52 +9,53 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import Connection.AccountService;
-import WebAnswer.JsonGenerator;
-import WebAnswer.PageGenerator;
+import connection.AccountService;
+import webanswer.JsonGenerator;
+import webanswer.PageGenerator;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by olegermakov on 22.09.15.
  */
 public class AdminServlet extends HttpServlet {
-    private AccountService accountService;
+    private  AccountService accountService;
 
-    public AdminServlet(AccountService accountservice) {
+    public AdminServlet(@NotNull AccountService accountservice) {
         this.accountService = accountservice;
     }
     @Override
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException, IOException {
+    public void doGet(@NotNull HttpServletRequest request,
+                      @NotNull HttpServletResponse response) throws NullPointerException, ServletException, IOException{
         Map<String, Object> pageVariables = new HashMap<>();
-        assert request != null;
-        assert accountService != null;
-        if(accountService.getSessions(request.getSession().getId()) != null && accountService.getSessions(request.getSession().getId()).getLogin()=="Admin") {
-            assert response != null;
+
+
+        if(Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
+
             response.setContentType("text/html;charset=utf-8");
-            response.setStatus(HttpServletResponse.SC_OK);
 
             pageVariables.put("RegCount", accountService.getRegisteredCount());
             pageVariables.put("LogCount", accountService.getLoggedCount());
+            response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().println(PageGenerator.getPage("Admin.html", pageVariables));
         }
         else
         {
             pageVariables.put("status", "error");
             pageVariables.put("description", "no permission");
-            assert response != null;
+
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
     }
     @Override
-    public void doPost(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException, IOException {
-        assert response != null;
+    public void doPost(@NotNull HttpServletRequest request,
+                      @NotNull HttpServletResponse response) throws ServletException, IOException, NullPointerException {
+
         response.setContentType("text/html;charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
         Map<String, Object> pageVariables = new HashMap<>();
-        assert request != null;
-        assert accountService != null;
-        if(accountService.getSessions(request.getSession().getId()) != null && accountService.getSessions(request.getSession().getId()).getLogin()=="Admin") {
+
+
+        if(Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
             String timeString = request.getParameter("shutdown");
             if (timeString == null || Objects.equals(timeString, ""))
                 timeString = "1";
