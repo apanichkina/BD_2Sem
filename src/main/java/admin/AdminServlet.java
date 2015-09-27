@@ -29,7 +29,7 @@ public class AdminServlet extends HttpServlet {
         Map<String, Object> pageVariables = new HashMap<>();
 
 
-        if(Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
+        if(accountService.getSessions(request.getSession().getId()) != null && Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
 
             response.setContentType("text/html;charset=utf-8");
 
