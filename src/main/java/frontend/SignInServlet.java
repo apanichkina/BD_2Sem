@@ -18,6 +18,7 @@ import connection.*;
  * Created by iHelos on 21.09.2015.
  */
 public class SignInServlet extends HttpServlet {
+    @NotNull
     private AccountService accountService;
 
     public SignInServlet(@NotNull AccountService current_accountService) {
@@ -47,12 +48,11 @@ public class SignInServlet extends HttpServlet {
     }
 
     @Override
-    public void doPost(HttpServletRequest request,
-                       HttpServletResponse response) throws ServletException, IOException {
+    public void doPost(@NotNull HttpServletRequest request,
+                       @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
 
-        assert request != null;
         String name = request.getParameter("name");
         String password = request.getParameter("password");
 
@@ -63,10 +63,8 @@ public class SignInServlet extends HttpServlet {
         }
         else
         {
-            assert response != null;
             response.setStatus(HttpServletResponse.SC_OK);
 
-            assert accountService != null;
             UserProfile userInput = accountService.getUser(name);
             if(userInput == null)
             {
@@ -84,7 +82,6 @@ public class SignInServlet extends HttpServlet {
                 pageVariables.put("description", "wrong password");
             }
         }
-        assert response != null;
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

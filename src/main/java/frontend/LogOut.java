@@ -16,7 +16,7 @@ import java.util.Map;
  * Created by olegermakov on 22.09.15.
  */
 public class LogOut extends HttpServlet {
-
+    @NotNull
     private AccountService accountService;
 
     public LogOut(@NotNull AccountService current_accountService) {

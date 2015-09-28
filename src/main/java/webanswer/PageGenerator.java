@@ -4,7 +4,7 @@ package webanswer; /**
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,14 +13,15 @@ import java.io.Writer;
 import java.util.Map;
 /* TODO разобраться */
 public class PageGenerator {
+    @NotNull
     private static final String HTMLDIT = "templates";
+    @NotNull
     private static Configuration s_cfg = new Configuration();
 
-    @Nullable
-    public static Object getPage(String filename, Map<String, Object> data) {
+    @NotNull
+    public static Object getPage(@NotNull String filename, Map<String, Object> data) {
         Writer stream = new StringWriter();
         try {
-            assert s_cfg != null;
             Template template = s_cfg.getTemplate(HTMLDIT + File.separator + filename);
             assert template != null;
             template.process(data, stream);

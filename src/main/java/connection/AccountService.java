@@ -34,7 +34,7 @@ public class AccountService {
             sessions.put(sessionId, userProfile);
         }
 
-        public boolean deleteSessions(String sessionId) {
+        public boolean deleteSessions(@NotNull String sessionId) {
             if(getSessions(sessionId)!=null) {
                 sessions.remove(sessionId);
                 return true;

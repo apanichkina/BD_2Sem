@@ -7,11 +7,13 @@ import org.jetbrains.annotations.Nullable;
  * Created by iHelos on 20.09.2015.
  */
 public class UserProfile {
+    @NotNull
         String login;
+    @NotNull
         String password;
         String email;
 
-        public UserProfile(String Login, String Password, String Email) {
+        public UserProfile(@NotNull String Login,@NotNull String Password, String Email) {
             this.login = Login;
             this.password = Password;
             this.email = Email;

@@ -18,6 +18,7 @@ import java.util.Map;
  * Created by olegermakov on 22.09.15.
  */
 public class SignUpServlet extends HttpServlet {
+    @NotNull
     private AccountService accountService;
 
     public SignUpServlet(@NotNull AccountService current_accountService) {

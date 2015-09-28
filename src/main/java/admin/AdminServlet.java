@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
  * Created by olegermakov on 22.09.15.
  */
 public class AdminServlet extends HttpServlet {
+    @NotNull
     private  AccountService accountService;
 
     public AdminServlet(@NotNull AccountService accountservice) {
@@ -57,8 +58,9 @@ public class AdminServlet extends HttpServlet {
 
         if(accountService.getSessions(request.getSession().getId()) != null && Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
             String timeString = request.getParameter("shutdown");
-            if (timeString == null || Objects.equals(timeString, ""))
+            if (timeString == null || Objects.equals(timeString, "")) {
                 timeString = "1";
+            }
             int timeMS = Integer.valueOf(timeString);
             System.out.print("Server will be down after: " + timeMS + " ms");
             CloseThread.sleep(timeMS);

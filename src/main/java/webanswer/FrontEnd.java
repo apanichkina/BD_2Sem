@@ -2,6 +2,8 @@ package webanswer; /**
  * Created by olegermakov on 14.09.15.
  */
 
+import org.jetbrains.annotations.NotNull;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -30,8 +32,8 @@ public class FrontEnd extends HttpServlet {
     }
 
     @Override
-    public void doPost(HttpServletRequest request,
-                       HttpServletResponse response) throws ServletException, IOException {
+    public void doPost(@NotNull HttpServletRequest request,
+                       @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         login = request.getParameter("login");
         String password = request.getParameter("password");

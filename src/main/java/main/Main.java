@@ -10,6 +10,8 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 import javax.servlet.Servlet;
 import frontend.*;
+import org.jetbrains.annotations.NotNull;
+
 public class Main {
 
 
@@ -21,8 +23,9 @@ public class Main {
         int port = STANDARTPORT ;
         if (args.length == 1) {
             String portString = args[0];
-            assert portString != null;
-            port = Integer.valueOf(portString);
+            if (portString != null) {
+                port = Integer.valueOf(portString);
+            }
         }
 
         //FrontEnd frontend = new FrontEnd();
@@ -34,7 +37,6 @@ public class Main {
         Servlet profile = new ProfileServlet(accountService);
         Servlet admin = new AdminServlet(accountService);
 
-        /* TODO разобраться */
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
        //context.addServlet(new ServletHolder(frontend), "/authform");
         context.addServlet(new ServletHolder(signin), "/api/v1/auth/signin");
