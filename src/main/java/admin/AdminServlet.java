@@ -55,7 +55,7 @@ public class AdminServlet extends HttpServlet {
         Map<String, Object> pageVariables = new HashMap<>();
 
 
-        if(Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
+        if(accountService.getSessions(request.getSession().getId()) != null && Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
             String timeString = request.getParameter("shutdown");
             if (timeString == null || Objects.equals(timeString, ""))
                 timeString = "1";
