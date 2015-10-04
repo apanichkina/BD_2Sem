@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class FrontEnd extends HttpServlet {
 
@@ -51,7 +52,7 @@ public class FrontEnd extends HttpServlet {
 
         HashMap<String, Object> pageVariables = new HashMap<>();
         //noinspection OverlyComplexBooleanExpression
-        if (login==null || login =="" || password == null || password == "") {
+        if (login==null || Objects.equals(login, "") || password == null || Objects.equals(password, "")) {
             pageVariables.put("status", "error");
         }
         else {

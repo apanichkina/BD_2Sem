@@ -13,6 +13,7 @@ import connection.*;
         import java.io.IOException;
         import java.util.HashMap;
         import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by iHelos on 21.09.2015.
@@ -60,7 +61,7 @@ public class SignInServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         //noinspection OverlyComplexBooleanExpression
-        if (name == null || name.isEmpty() || password == null || password == "")
+        if (name == null || name.isEmpty() || password == null || Objects.equals(password, ""))
         {
             pageVariables.put("status", "error");
             pageVariables.put("description", "empty field");

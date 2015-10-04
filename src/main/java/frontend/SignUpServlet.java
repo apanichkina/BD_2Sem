@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by olegermakov on 22.09.15.
@@ -59,7 +60,7 @@ public class SignUpServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         //noinspection OverlyComplexBooleanExpression
-        if (name == null || email == null || password == null || name == "" || password == "")
+        if (name == null || email == null || password == null || Objects.equals(name, "") || Objects.equals(password, ""))
         {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             pageVariables.put("status", "404");
