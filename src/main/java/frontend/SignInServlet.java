@@ -35,7 +35,7 @@ public class SignInServlet extends HttpServlet {
         //noinspection ConstantConditions
         UserProfile profile = accountService.getSessions(request.getSession().getId());
         if (profile == null) {
-            //noinspection ConstantConditions
+            //noinspection ConstantConditions,resource
             response.getWriter().println(PageGenerator.getPage("SignIn.html", pageVariables));
         }
         else
@@ -44,7 +44,7 @@ public class SignInServlet extends HttpServlet {
             pageVariables.put("description","already signed in");
 
             response.setContentType("application/json; charset=utf-8");
-            //noinspection ConstantConditions
+            //noinspection ConstantConditions,resource
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
         response.setStatus(HttpServletResponse.SC_OK);
@@ -87,7 +87,7 @@ public class SignInServlet extends HttpServlet {
                 pageVariables.put("description", "wrong password");
             }
         }
-        //noinspection ConstantConditions
+        //noinspection ConstantConditions,resource
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

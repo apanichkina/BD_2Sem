@@ -38,7 +38,7 @@ public class AdminServlet extends HttpServlet {
             pageVariables.put("RegCount", accountService.getRegisteredCount());
             pageVariables.put("LogCount", accountService.getLoggedCount());
             response.setStatus(HttpServletResponse.SC_OK);
-            //noinspection ConstantConditions
+            //noinspection ConstantConditions,resource
             response.getWriter().println(PageGenerator.getPage("Admin.html", pageVariables));
         }
         else
@@ -46,6 +46,7 @@ public class AdminServlet extends HttpServlet {
             pageVariables.put("status", "error");
             pageVariables.put("description", "no permission");
 
+            //noinspection resource,ConstantConditions
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
     }
@@ -59,11 +60,13 @@ public class AdminServlet extends HttpServlet {
         Map<String, Object> pageVariables = new HashMap<>();
 
 
+        //noinspection ConstantConditions
         if(accountService.getSessions(request.getSession().getId()) != null && Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
             String timeString = request.getParameter("shutdown");
             if (timeString == null || timeString.isEmpty()) {
                 timeString = "1";
             }
+            //noinspection ConstantConditions
             int timeMS = Integer.valueOf(timeString);
             System.out.print("Server will be down after: " + timeMS + " ms");
             CloseThread.sleep(timeMS);
@@ -74,6 +77,7 @@ public class AdminServlet extends HttpServlet {
         {
             pageVariables.put("status", "error");
             pageVariables.put("description", "no permission");
+            //noinspection ConstantConditions,resource
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
     }

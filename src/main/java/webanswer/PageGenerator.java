@@ -11,8 +11,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
-/* TODO разобраться */
+
 public class PageGenerator {
+
     @NotNull
     private static final String HTMLDIT = "templates";
     @NotNull
@@ -23,6 +24,19 @@ public class PageGenerator {
         Writer stream = new StringWriter();
         try {
             Template template = s_cfg.getTemplate(HTMLDIT + File.separator + filename);
+            //noinspection ConstantConditions
+            template.process(data, stream);
+        } catch (IOException | TemplateException e) {
+            e.printStackTrace();
+        }
+        return stream;
+    }
+
+    @NotNull
+    public static Object getPage(@NotNull String filename, @NotNull String directory, Map<String, Object> data) {
+        Writer stream = new StringWriter();
+        try {
+            Template template = s_cfg.getTemplate(directory + File.separator + filename);
             //noinspection ConstantConditions
             template.process(data, stream);
         } catch (IOException | TemplateException e) {

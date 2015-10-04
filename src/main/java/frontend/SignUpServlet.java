@@ -33,7 +33,7 @@ public class SignUpServlet extends HttpServlet {
         UserProfile profile = accountService.getSessions(request.getSession().getId());
         if (profile == null) {
 
-            //noinspection ConstantConditions
+            //noinspection ConstantConditions,resource
             response.getWriter().println(PageGenerator.getPage("SignUp.html", pageVariables));
         }
         else
@@ -42,7 +42,7 @@ public class SignUpServlet extends HttpServlet {
             pageVariables.put("description","already signed up");
 
             response.setContentType("application/json; charset=utf-8");
-            //noinspection ConstantConditions
+            //noinspection ConstantConditions,resource
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
         response.setStatus(HttpServletResponse.SC_OK);
@@ -87,7 +87,7 @@ public class SignUpServlet extends HttpServlet {
             }
         }
 
-        //noinspection ConstantConditions
+        //noinspection ConstantConditions,resource
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

@@ -23,7 +23,7 @@ public class FrontEnd extends HttpServlet {
         Map<String, Object> pageVariables = new HashMap<>();
         pageVariables.put("lastLogin", login == null ? "" : login);
 
-        //noinspection ConstantConditions
+        //noinspection ConstantConditions,resource
         response.getWriter().println(PageGenerator.getPage("authform.html", pageVariables));
 
         response.setContentType("text/html;charset=utf-8");
@@ -61,7 +61,7 @@ public class FrontEnd extends HttpServlet {
         }
 
         response.setContentType("application/json; charset=utf-8");
-        //noinspection ConstantConditions
+        //noinspection ConstantConditions,resource
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
         response.setStatus(HttpServletResponse.SC_OK);
     }

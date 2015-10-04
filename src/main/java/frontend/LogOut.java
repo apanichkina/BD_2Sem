@@ -37,7 +37,7 @@ public class LogOut extends HttpServlet {
             pageVariables.put("description", "already not logged in");
         }
 
-        //noinspection ConstantConditions
+        //noinspection ConstantConditions,resource
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }
