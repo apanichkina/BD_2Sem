@@ -24,10 +24,11 @@ public class LogOut extends HttpServlet {
     }
 
     @Override
-    public void doPost(HttpServletRequest request,
+    public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
         Map<String, Object> pageVariables = new HashMap<>();
 
+        //noinspection ConstantConditions
         if(accountService.deleteSessions(request.getSession().getId())) {
             pageVariables.put("status","ok");
         }
@@ -36,6 +37,7 @@ public class LogOut extends HttpServlet {
             pageVariables.put("description", "already not logged in");
         }
 
+        //noinspection ConstantConditions
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

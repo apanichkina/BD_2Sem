@@ -13,17 +13,22 @@ public class JsonGenerator {
     /* TODO */
 
     @NotNull
-    public static String getJson(Map<String, Object> data) {
+    public static String getJson(@NotNull Map<String, Object> data) {
         JSONObject result = new JSONObject();
         JSONObject body = new JSONObject();
+        //noinspection unchecked
         result.put("code", data.get("status"));
         data.remove("code");
+        //noinspection unchecked
         result.put("body", body);
 
+
         for (Map.Entry<String, Object> entry : data.entrySet()) {
+            //noinspection unchecked
             body.put(entry.getKey(), entry.getValue());
         }
 
+        //noinspection ConstantConditions
         return result.toJSONString();
     }
 }

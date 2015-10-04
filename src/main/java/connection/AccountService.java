@@ -15,7 +15,7 @@ public class AccountService {
         @NotNull
         private Map<String, UserProfile> users = new HashMap<>();
         @NotNull
-        private Map<String, UserProfile> sessions = new ConcurrentHashMap<>();
+        private Map<String, UserProfile> sessions =  new ConcurrentHashMap<>();
 
         private static final UserProfile ADMIN = new UserProfile("admin","pass","pass");
 

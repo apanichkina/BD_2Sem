@@ -29,14 +29,17 @@ public class ProfileServlet extends HttpServlet {
 
         Map<String, Object> pageVariables = new HashMap<>();
 
+        //noinspection ConstantConditions
         UserProfile profile = accountService.getSessions(request.getSession().getId());
         if (profile == null) {
+            //noinspection ConstantConditions
             response.getWriter().println(PageGenerator.getPage("SignIn.html", pageVariables));
         }
         else
         {
             pageVariables.put("name", profile.getLogin());
             pageVariables.put("email", profile.getEmail());
+            //noinspection ConstantConditions
             response.getWriter().println(PageGenerator.getPage("ProfilePage.html", pageVariables));
         }
         response.setStatus(HttpServletResponse.SC_OK);

@@ -18,11 +18,12 @@ public class FrontEnd extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException, IOException {
+                      @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
         pageVariables.put("lastLogin", login == null ? "" : login);
 
+        //noinspection ConstantConditions
         response.getWriter().println(PageGenerator.getPage("authform.html", pageVariables));
 
         response.setContentType("text/html;charset=utf-8");
@@ -49,6 +50,7 @@ public class FrontEnd extends HttpServlet {
 
 
         HashMap<String, Object> pageVariables = new HashMap<>();
+        //noinspection OverlyComplexBooleanExpression
         if (login==null || login =="" || password == null || password == "") {
             pageVariables.put("status", "error");
         }
@@ -59,6 +61,7 @@ public class FrontEnd extends HttpServlet {
         }
 
         response.setContentType("application/json; charset=utf-8");
+        //noinspection ConstantConditions
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
         response.setStatus(HttpServletResponse.SC_OK);
     }

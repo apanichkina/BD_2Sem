@@ -17,13 +17,14 @@ public class Main {
 
     public static final int  STANDARTPORT = 8080;
 
-    public static void main(String[] args) throws Exception {
+    @SuppressWarnings("OverlyBroadThrowsClause")
+    public static void main(@NotNull String[] args) throws Exception {
 
-        assert args != null;
         int port = STANDARTPORT ;
         if (args.length == 1) {
             String portString = args[0];
             if (portString != null) {
+                //noinspection ConstantConditions
                 port = Integer.valueOf(portString);
             }
         }
@@ -51,4 +52,7 @@ public class Main {
         server.start();
         server.join();
     }
+
+
+
 }

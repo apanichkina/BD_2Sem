@@ -23,7 +23,7 @@ public class PageGenerator {
         Writer stream = new StringWriter();
         try {
             Template template = s_cfg.getTemplate(HTMLDIT + File.separator + filename);
-            assert template != null;
+            //noinspection ConstantConditions
             template.process(data, stream);
         } catch (IOException | TemplateException e) {
             e.printStackTrace();

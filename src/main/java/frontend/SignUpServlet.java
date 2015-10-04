@@ -18,8 +18,7 @@ import java.util.Map;
  * Created by olegermakov on 22.09.15.
  */
 public class SignUpServlet extends HttpServlet {
-    @NotNull
-    private AccountService accountService;
+    @NotNull private AccountService accountService;
 
     public SignUpServlet(@NotNull AccountService current_accountService) {
         this.accountService = current_accountService;
@@ -30,9 +29,11 @@ public class SignUpServlet extends HttpServlet {
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         Map<String, Object> pageVariables = new HashMap<>();
+        //noinspection ConstantConditions
         UserProfile profile = accountService.getSessions(request.getSession().getId());
         if (profile == null) {
 
+            //noinspection ConstantConditions
             response.getWriter().println(PageGenerator.getPage("SignUp.html", pageVariables));
         }
         else
@@ -41,6 +42,7 @@ public class SignUpServlet extends HttpServlet {
             pageVariables.put("description","already signed up");
 
             response.setContentType("application/json; charset=utf-8");
+            //noinspection ConstantConditions
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
         response.setStatus(HttpServletResponse.SC_OK);
@@ -56,6 +58,7 @@ public class SignUpServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
+        //noinspection OverlyComplexBooleanExpression
         if (name == null || email == null || password == null || name == "" || password == "")
         {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -70,6 +73,7 @@ public class SignUpServlet extends HttpServlet {
 
             if(accountService.getUser(name) == null) {
                 accountService.addUser(newUser.getLogin(), newUser);
+                //noinspection ConstantConditions
                 accountService.addSessions(request.getSession().getId(), newUser);
                 pageVariables.put("status", "ok");
                 pageVariables.put("name", name);
@@ -83,6 +87,7 @@ public class SignUpServlet extends HttpServlet {
             }
         }
 
+        //noinspection ConstantConditions
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

@@ -32,8 +32,10 @@ public class SignInServlet extends HttpServlet {
 
         Map<String, Object> pageVariables = new HashMap<>();
 
+        //noinspection ConstantConditions
         UserProfile profile = accountService.getSessions(request.getSession().getId());
         if (profile == null) {
+            //noinspection ConstantConditions
             response.getWriter().println(PageGenerator.getPage("SignIn.html", pageVariables));
         }
         else
@@ -42,6 +44,7 @@ public class SignInServlet extends HttpServlet {
             pageVariables.put("description","already signed in");
 
             response.setContentType("application/json; charset=utf-8");
+            //noinspection ConstantConditions
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
         response.setStatus(HttpServletResponse.SC_OK);
@@ -56,7 +59,8 @@ public class SignInServlet extends HttpServlet {
         String name = request.getParameter("name");
         String password = request.getParameter("password");
 
-        if (name == null || name == "" || password == null || password == "")
+        //noinspection OverlyComplexBooleanExpression
+        if (name == null || name.isEmpty() || password == null || password == "")
         {
             pageVariables.put("status", "error");
             pageVariables.put("description", "empty field");
@@ -75,6 +79,7 @@ public class SignInServlet extends HttpServlet {
                 pageVariables.put("status","ok");
                 pageVariables.put("name", name);
                 pageVariables.put("password", password);
+                //noinspection ConstantConditions
                 accountService.addSessions(request.getSession().getId(), userInput);
             }
             else {
@@ -82,6 +87,7 @@ public class SignInServlet extends HttpServlet {
                 pageVariables.put("description", "wrong password");
             }
         }
+        //noinspection ConstantConditions
         response.getWriter().println(JsonGenerator.getJson(pageVariables));
     }
 }

@@ -26,10 +26,11 @@ public class AdminServlet extends HttpServlet {
     }
     @Override
     public void doGet(@NotNull HttpServletRequest request,
-                      @NotNull HttpServletResponse response) throws NullPointerException, ServletException, IOException{
+                      @NotNull HttpServletResponse response) throws ServletException, IOException{
         Map<String, Object> pageVariables = new HashMap<>();
 
 
+        //noinspection ConstantConditions
         if(accountService.getSessions(request.getSession().getId()) != null && Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
 
             response.setContentType("text/html;charset=utf-8");
@@ -37,6 +38,7 @@ public class AdminServlet extends HttpServlet {
             pageVariables.put("RegCount", accountService.getRegisteredCount());
             pageVariables.put("LogCount", accountService.getLoggedCount());
             response.setStatus(HttpServletResponse.SC_OK);
+            //noinspection ConstantConditions
             response.getWriter().println(PageGenerator.getPage("Admin.html", pageVariables));
         }
         else
@@ -47,6 +49,7 @@ public class AdminServlet extends HttpServlet {
             response.getWriter().println(JsonGenerator.getJson(pageVariables));
         }
     }
+
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException, NullPointerException {
@@ -58,7 +61,7 @@ public class AdminServlet extends HttpServlet {
 
         if(accountService.getSessions(request.getSession().getId()) != null && Objects.equals(accountService.getSessions(request.getSession().getId()).getLogin(), "admin")) {
             String timeString = request.getParameter("shutdown");
-            if (timeString == null || Objects.equals(timeString, "")) {
+            if (timeString == null || timeString.isEmpty()) {
                 timeString = "1";
             }
             int timeMS = Integer.valueOf(timeString);
