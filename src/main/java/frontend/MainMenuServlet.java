@@ -30,7 +30,7 @@ public class MainMenuServlet extends HttpServlet {
 
         Map<String, Object> pageVariables = new HashMap<>();
         //noinspection ConstantConditions,resource
-        response.getWriter().println(PageGenerator.getPage("Index.html", "" , pageVariables));
+        response.getWriter().println(PageGenerator.getPage("Index.html", "public_html" , pageVariables));
         response.setStatus(HttpServletResponse.SC_OK);
     }
 }

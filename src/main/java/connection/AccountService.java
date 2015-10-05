@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AccountService {
 
         @NotNull
-        private Map<String, UserProfile> users = new HashMap<>();
+        private Map<String, UserProfile> users = new ConcurrentHashMap<>();
         @NotNull
         private Map<String, UserProfile> sessions =  new ConcurrentHashMap<>();
 
