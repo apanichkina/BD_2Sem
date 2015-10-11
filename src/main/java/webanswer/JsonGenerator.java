@@ -18,9 +18,9 @@ public class JsonGenerator {
         JSONObject body = new JSONObject();
         //noinspection unchecked
         result.put("code", data.get("status"));
-        data.remove("code");
+        data.remove("status");
         //noinspection unchecked
-        result.put("body", body);
+        result.put("responce", body);
 
 
         for (Map.Entry<String, Object> entry : data.entrySet()) {

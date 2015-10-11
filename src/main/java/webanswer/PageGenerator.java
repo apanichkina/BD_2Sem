@@ -12,7 +12,14 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class PageGenerator {
+
 
     @NotNull
     private static final String HTMLDIT = "templates";
