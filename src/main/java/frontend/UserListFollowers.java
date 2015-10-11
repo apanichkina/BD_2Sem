@@ -18,6 +18,18 @@ import java.util.LinkedList;
  * Created by anna on 11.10.15.
  */
 public class UserListFollowers extends HttpServlet {
+    private String  field_name= null;
+    private String  condition_name= null;
+    public UserListFollowers(String param) {
+        if (param.equals("followers")){
+        field_name="followerID";
+        condition_name="followeeID";
+        }
+        if (param.equals("following")){
+            field_name="followeeID";
+            condition_name="followerID";
+        }
+    }
     public static final String URL_DB = "jdbc:mysql://localhost:3306/forumdb";
     public static final String USER_DB = "root";
     public static final String PASSWORD_DB = "12345";
@@ -45,16 +57,16 @@ public class UserListFollowers extends HttpServlet {
                 curr_id = rs.getInt("id");
             }
 
-            String query_followers = "SELECT followerID \n" +
-                    "FROM Follow \n" +
-                    "WHERE followeeID="+curr_id;
+            String query_followers = "SELECT "+field_name +
+                    " FROM Follow " +
+                    " WHERE "+condition_name+"="+curr_id;
             stmt = con.prepareStatement(query_followers);
             rs = stmt.executeQuery();
-            ArrayList<Integer> followers_list = new ArrayList<Integer>();
+
             LinkedList  list = new LinkedList();
             while (rs.next()) {
                 JSONObject responceJS = new JSONObject();
-                UserDetailsServlet.UsDet(rs.getInt("followerID"), stmt, rs, responceJS, con);
+                UserDetailsServlet.UsDet(rs.getInt(field_name), stmt, rs, responceJS, con);
                 list.push(responceJS);
             }
 

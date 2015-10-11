@@ -31,12 +31,15 @@ public class Main {
         AccountService accountService = new AccountService();
 
         Servlet user_details = new UserDetailsServlet();
-        Servlet user_listFollowers = new UserListFollowers();
+        Servlet user_listFollowers = new UserListFollowers("followers");
+        Servlet user_listFollowing = new UserListFollowers("following");
+
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
         context.addServlet(new ServletHolder(user_details), "/db/api/user/details/");
         context.addServlet(new ServletHolder(user_listFollowers), "/db/api/user/listFollowers/");
+        context.addServlet(new ServletHolder(user_listFollowing), "/db/api/user/listFollowing/");
 
         Server server = new Server(port);
         server.setHandler(context);
