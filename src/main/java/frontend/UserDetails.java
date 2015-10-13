@@ -28,11 +28,12 @@ public class UserDetails extends HttpServlet {
 
     public static void UsDet(int curr_id,PreparedStatement stmt,ResultSet rs, @Nullable JsonObject  responseJSON , Connection con) throws IOException, SQLException {
 
-        String query_userDetails = "SELECT id,about,email,isAnonymous,`name`,username \n" +
-                                    "FROM User\n" +
-                                    "WHERE id=" + curr_id;
+        String query_userDetails = "SELECT * FROM User WHERE id=?";
         stmt = con.prepareStatement(query_userDetails);
+        stmt.setInt(1, curr_id);
+        //TODO проверить везде сработал ли запрос посредством проверки возвращаемого значения
         rs = stmt.executeQuery();
+        //TODO проверить валидность данных
         while (rs.next()) {
             responseJSON.addProperty("id", rs.getInt("id"));
             responseJSON.addProperty("about", rs.getString("about"));
@@ -42,10 +43,11 @@ public class UserDetails extends HttpServlet {
             responseJSON.addProperty("isAnonymous", rs.getBoolean("isAnonymous"));
         }
         //////3 qvery
-        String query_subscriptions = "SELECT threatID\n" +
+        String query_subscriptions = "SELECT threatID\n" + //TODO threadID
                 "FROM Subscription\n" +
-                "WHERE userID=" + curr_id;
+                "WHERE userID= ?";
         stmt = con.prepareStatement(query_subscriptions);
+        stmt.setInt(1, curr_id);
         rs = stmt.executeQuery();
         JsonArray subscriptions_list = new JsonArray();
         while (rs.next()) {
@@ -100,20 +102,19 @@ public class UserDetails extends HttpServlet {
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
 
-        //Map<String, Object> pageVariables = new HashMap<>();
+
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", "0");
 
         String curr_email = request.getParameter("user");
         try {
-            // opening database connection to MySQL server
 
             int curr_id = GetID(curr_email, con,stmt,rs);
 
             UsDet(curr_id, stmt, rs, responseJSON, con);
             result.add("response", responseJSON);
-            //result.put("response", responseJSON);
+
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         } finally {

@@ -45,6 +45,7 @@ public class Main {
         Servlet user_updateProfile = new UserUpdateProfile(mainConnection);
         Servlet user_unfollow = new UserUnfollow(mainConnection, "unfollow");
         Servlet user_follow = new UserUnfollow(mainConnection, "follow");
+        Servlet post_details = new PostDetails(mainConnection);
 
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -55,6 +56,7 @@ public class Main {
         context.addServlet(new ServletHolder(user_updateProfile), "/db/api/user/updateProfile/");
         context.addServlet(new ServletHolder(user_unfollow), "/db/api/user/unfollow/");
         context.addServlet(new ServletHolder(user_follow), "/db/api/user/follow/");
+        context.addServlet(new ServletHolder(post_details), "/db/api/post/details/");
 
         Server server = new Server(port);
         server.setHandler(context);
