@@ -1,7 +1,8 @@
 package frontend;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 
@@ -11,76 +12,62 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
+
 
 /**
  * Created by anna on 11.10.15.
  */
 public class UserListFollowers extends HttpServlet {
-    private String  field_name= null;
-    private String  condition_name= null;
-    public UserListFollowers(String param) {
-        if (param.equals("followers")){
-        field_name="followerID";
-        condition_name="followeeID";
-        }
-        if (param.equals("following")){
-            field_name="followeeID";
-            condition_name="followerID";
-        }
-    }
-    public static final String URL_DB = "jdbc:mysql://localhost:3306/forumdb";
-    public static final String USER_DB = "root";
-    public static final String PASSWORD_DB = "12345";
 
-    public static Connection con = null;
+    private Connection con = null;
+    private String field_name = "";
+    private String query = "";
+    public UserListFollowers(Connection connect, String param) {
+        con = connect;
+        if (param.equals("followers")) {
+            field_name = "followerID";
+            query = "SELECT followerID FROM Follow WHERE followeeID= ?";
+        }
+        if (param.equals("following")) {
+            field_name = "followeeID";
+            query = "SELECT followeeID FROM Follow WHERE followerID= ?";
+        }
+
+    }
+
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
     @Override
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
 
-        JSONObject result = new JSONObject();
-        result.put("code", "0");
-        String curr_email = request.getParameter("email");
+        JsonObject result = new JsonObject();
+        JsonObject responseJSON = new JsonObject();
+        result.addProperty("code", "0");
+
+        String curr_email = request.getParameter("user");
 
         try {
-            // opening database connection to MySQL server
-            con = DriverManager.getConnection(URL_DB, USER_DB, PASSWORD_DB);
-            int curr_id = 0;
-            String query_getID = "SELECT id FROM User WHERE email=?";
-            stmt = con.prepareStatement(query_getID);
-            stmt.setString(1, curr_email);
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                curr_id = rs.getInt("id");
-            }
+            int curr_id = UserDetails.GetID(curr_email, con, stmt, rs);
 
-            String query_followers = "SELECT "+field_name +
-                    " FROM Follow " +
-                    " WHERE "+condition_name+"="+curr_id;
-            stmt = con.prepareStatement(query_followers);
+            stmt = con.prepareStatement(query);
+            stmt.setInt(1, curr_id);
             rs = stmt.executeQuery();
 
-            LinkedList  list = new LinkedList();
+            JsonArray list = new JsonArray();
             while (rs.next()) {
-                JSONObject responceJS = new JSONObject();
-                UserDetailsServlet.UsDet(rs.getInt(field_name), stmt, rs, responceJS, con);
-                list.push(responceJS);
+                JsonObject responceJS = new JsonObject();
+                UserDetails.UsDet(rs.getInt(field_name), stmt, rs, responceJS, con);
+                list.add(responceJS);
+
             }
 
-            result.put("response", list);
+            result.add("response", list);
 
 
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         } finally {
-            //close connection ,stmt and resultset here
-            try {if (con != null) {
-                con.close();
-            }
-            }catch(SQLException se) { /*can't do anything */ }
             try{if (stmt != null){
                 stmt.close();
             }
@@ -89,7 +76,6 @@ public class UserListFollowers extends HttpServlet {
                 rs.close();
             }
             } catch(SQLException se) { /*can't do anything */ }
-
 
         }
         response.setContentType("application/json; charset=utf-8");
