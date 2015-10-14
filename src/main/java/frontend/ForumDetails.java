@@ -29,7 +29,7 @@ public class ForumDetails extends HttpServlet {
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
 
-    public static void PostDet(int curr_id,PreparedStatement stmt,ResultSet rs, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
+    public static void ForumDet(int curr_id,PreparedStatement stmt,ResultSet rs, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
 
         String query_forumDetails = "SELECT Forum.* , User.email FROM Forum LEFT JOIN User ON User.id=Forum.userID WHERE Forum.id=?";
         stmt = con.prepareStatement(query_forumDetails);
@@ -65,7 +65,7 @@ public class ForumDetails extends HttpServlet {
 
         try {
             int curr_id = UserDetails.GetID(curr_short_name, "short_name", table_name, con, stmt, rs);
-            PostDet(curr_id, stmt, rs, responseJSON, con, related);
+            ForumDet(curr_id, stmt, rs, responseJSON, con, related);
             result.add("response", responseJSON);
 
         } catch (SQLException sqlEx) {

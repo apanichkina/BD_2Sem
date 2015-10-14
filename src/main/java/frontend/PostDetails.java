@@ -1,6 +1,5 @@
 package frontend;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 /**
@@ -57,10 +57,10 @@ public class PostDetails extends HttpServlet {
 
             if (related.contains("forum")){
                 JsonObject forum_relatedJSON = new JsonObject();
-                //ForumDetails.ForumDet(rs.getInt("forumID"),stmt,rs,forum_relatedJSON,con); //TODO после создания Forum реализовать
+                ForumDetails.ForumDet(rs.getInt("forumID"),stmt,rs,forum_relatedJSON,con, new HashSet<String>()); //TODO проверить!!!!!!!
                 responseJSON.add("forum",forum_relatedJSON);
             }
-            else responseJSON.addProperty("forum", rs.getString("forumID")); ///TODO заменить на short_name после join
+            else responseJSON.addProperty("forum", rs.getInt("forumID")); ///TODO заменить на short_name после join
 
             responseJSON.addProperty("message", rs.getString("message"));
             responseJSON.addProperty("isApproved", rs.getBoolean("isApproved"));
@@ -93,8 +93,9 @@ public class PostDetails extends HttpServlet {
         String input_id = request.getParameter("post");
         int curr_id = Integer.parseInt(input_id);//TODO проперить валидность
 
-        HashSet<String> related= new HashSet<String>();
-        related.add(request.getParameter("related"));
+
+        HashSet<String> related= new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
+        //related = request.getParameterValues("related");
 
 
 

@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
 
 /**
  * Created by anna on 09.10.15.
@@ -45,7 +44,7 @@ public class UserDetails extends HttpServlet {
             responseJSON.addProperty("isAnonymous", rs.getBoolean("isAnonymous"));
         }
         //////3 qvery
-        String query_subscriptions = "SELECT threatID\n" + //TODO threadID
+        String query_subscriptions = "SELECT threadID\n" + //TODO threadID
                 "FROM Subscription\n" +
                 "WHERE userID= ?";
         stmt = con.prepareStatement(query_subscriptions);
@@ -53,7 +52,7 @@ public class UserDetails extends HttpServlet {
         rs = stmt.executeQuery();
         JsonArray subscriptions_list = new JsonArray();
         while (rs.next()) {
-            subscriptions_list.add(rs.getInt("threatID"));
+            subscriptions_list.add(rs.getInt("threadID"));
         }
         responseJSON.add("subscriptions", subscriptions_list);
         ////4 qvery

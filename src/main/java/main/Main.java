@@ -47,6 +47,7 @@ public class Main {
         Servlet user_follow = new UserUnfollow(mainConnection, "User", "follow");
         Servlet post_details = new PostDetails(mainConnection);
         Servlet forum_details = new ForumDetails(mainConnection, "Forum");
+        Servlet user_create = new UserCreate(mainConnection);
 
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -59,6 +60,7 @@ public class Main {
         context.addServlet(new ServletHolder(user_follow), "/db/api/user/follow/");
         context.addServlet(new ServletHolder(post_details), "/db/api/post/details/");
         context.addServlet(new ServletHolder(forum_details), "/db/api/forum/details/");
+        context.addServlet(new ServletHolder(user_create), "/db/api/user/create/");
 
         Server server = new Server(port);
         server.setHandler(context);
