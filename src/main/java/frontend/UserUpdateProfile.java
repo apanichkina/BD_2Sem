@@ -15,12 +15,14 @@ import java.sql.*;
  * Created by anna on 12.10.15.
  */
 public class UserUpdateProfile extends HttpServlet {
-
-
     private Connection con = null;
-    public UserUpdateProfile(Connection connect) {
+    private String table_name = "";
+    public UserUpdateProfile(Connection connect, String table) {
         con = connect;
+        table_name = table;
     }
+
+
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
 
@@ -39,7 +41,7 @@ public class UserUpdateProfile extends HttpServlet {
         result.addProperty("code", "0");
         result.add("response", responseJSON);
         try {
-            int curr_id = UserDetails.GetID(curr_email, con, stmt, rs);
+            int curr_id = UserDetails.GetID(curr_email, "email", table_name, con, stmt, rs);
             String query_updateProfile = "UPDATE `User` SET about = ?, `name`= ? WHERE id= ?";
             stmt = con.prepareStatement(query_updateProfile);
             stmt.setString(1, new_about);

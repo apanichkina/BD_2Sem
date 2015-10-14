@@ -39,13 +39,14 @@ public class Main {
 
         AccountService accountService = new AccountService();
 
-        Servlet user_details = new UserDetails(mainConnection);
-        Servlet user_listFollowers = new UserListFollowers(mainConnection, "followers");
-        Servlet user_listFollowing = new UserListFollowers(mainConnection, "following");
-        Servlet user_updateProfile = new UserUpdateProfile(mainConnection);
-        Servlet user_unfollow = new UserUnfollow(mainConnection, "unfollow");
-        Servlet user_follow = new UserUnfollow(mainConnection, "follow");
+        Servlet user_details = new UserDetails(mainConnection, "User");
+        Servlet user_listFollowers = new UserListFollowers(mainConnection, "User", "followers");
+        Servlet user_listFollowing = new UserListFollowers(mainConnection, "User", "following");
+        Servlet user_updateProfile = new UserUpdateProfile(mainConnection, "User");
+        Servlet user_unfollow = new UserUnfollow(mainConnection, "User", "unfollow");
+        Servlet user_follow = new UserUnfollow(mainConnection, "User", "follow");
         Servlet post_details = new PostDetails(mainConnection);
+        Servlet forum_details = new ForumDetails(mainConnection, "Forum");
 
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -57,6 +58,7 @@ public class Main {
         context.addServlet(new ServletHolder(user_unfollow), "/db/api/user/unfollow/");
         context.addServlet(new ServletHolder(user_follow), "/db/api/user/follow/");
         context.addServlet(new ServletHolder(post_details), "/db/api/post/details/");
+        context.addServlet(new ServletHolder(forum_details), "/db/api/forum/details/");
 
         Server server = new Server(port);
         server.setHandler(context);

@@ -27,9 +27,10 @@ public class UserUnfollow extends HttpServlet {
 
     private Connection con = null;
     private String query = "";
-
-    public UserUnfollow(Connection connect, String param) {
+    private String table_name = "";
+    public UserUnfollow(Connection connect, String table, String param) {
         con = connect;
+        table_name = table;
         if (param.equals("follow")) {
             query = "INSERT INTO Follow (followerID,followeeID) VALUES(?,?);";
         }
@@ -57,8 +58,8 @@ public class UserUnfollow extends HttpServlet {
         try {
 
             //con = DriverManager.getConnection(URL_DB, USER_DB, PASSWORD_DB);
-            int follower_id = UserDetails.GetID(follower, con, stmt, rs);
-            int followee_id = UserDetails.GetID(followee, con, stmt, rs);
+            int follower_id = UserDetails.GetID(follower, "email", table_name, con, stmt, rs);
+            int followee_id = UserDetails.GetID(followee, "email", table_name, con, stmt, rs);
 
 
             stmt = con.prepareStatement(query);

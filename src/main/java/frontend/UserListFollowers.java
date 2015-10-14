@@ -22,8 +22,10 @@ public class UserListFollowers extends HttpServlet {
     private Connection con = null;
     private String field_name = "";
     private String query = "";
-    public UserListFollowers(Connection connect, String param) {
+    private  String table_name = "";
+    public UserListFollowers(Connection connect, String table, String param) {
         con = connect;
+        table_name = table;
         if (param.equals("followers")) {
             field_name = "followerID";
             query = "SELECT followerID FROM Follow WHERE followeeID= ?";
@@ -48,7 +50,7 @@ public class UserListFollowers extends HttpServlet {
         String curr_email = request.getParameter("user");
 
         try {
-            int curr_id = UserDetails.GetID(curr_email, con, stmt, rs);
+            int curr_id = UserDetails.GetID(curr_email, "email", table_name, con, stmt, rs);
 
             stmt = con.prepareStatement(query);
             stmt.setInt(1, curr_id);

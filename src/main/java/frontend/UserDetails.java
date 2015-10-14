@@ -20,8 +20,10 @@ import java.util.ArrayList;
 public class UserDetails extends HttpServlet {
 
     private Connection con = null;
-    public UserDetails(Connection connect) {
+    private String table_name = "";
+    public UserDetails(Connection connect, String table) {
         con = connect;
+        table_name = table;
     }
     public static  PreparedStatement stmt = null;
     public static ResultSet rs = null;
@@ -86,11 +88,11 @@ public class UserDetails extends HttpServlet {
 
     };
 
-    public static int GetID (String curr_email, Connection con,  PreparedStatement stmt, ResultSet rs) throws SQLException {
+    public static int GetID (String row_value, String row_name, String table_name, Connection con,  PreparedStatement stmt, ResultSet rs) throws SQLException {
         int curr_id = 0;
-        String query_getID = "SELECT id FROM User WHERE email=?";
+        String query_getID = "SELECT id FROM "+ table_name+" WHERE "+row_name+"=?";
         stmt = con.prepareStatement(query_getID);
-        stmt.setString(1, curr_email);
+        stmt.setString(1, row_value);
         rs = stmt.executeQuery();
         while (rs.next()) {
             curr_id = rs.getInt("id");
@@ -110,7 +112,7 @@ public class UserDetails extends HttpServlet {
         String curr_email = request.getParameter("user");
         try {
 
-            int curr_id = GetID(curr_email, con,stmt,rs);
+            int curr_id = GetID(curr_email, "email", table_name, con,stmt,rs);
 
             UsDet(curr_id, stmt, rs, responseJSON, con);
             result.add("response", responseJSON);
