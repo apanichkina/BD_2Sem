@@ -18,6 +18,7 @@ import post.PostCreateServlet;
 import post.PostDetailsServlet;
 import thread.ThreadCreateServlet;
 import thread.ThreadOpenServlet;
+import thread.ThreadRemoveServlet;
 import thread.ThreadSubscribeServlet;
 import user.UserCreateServlet;
 import user.UserDetailsServlet;
@@ -68,6 +69,8 @@ public class Main {
         Servlet thread_unsubscribe = new ThreadSubscribeServlet(mainConnection, "unsubscribe");
         Servlet thread_open = new ThreadOpenServlet(mainConnection, "open");
         Servlet thread_close = new ThreadOpenServlet(mainConnection, "close");
+        Servlet thread_remove = new ThreadRemoveServlet(mainConnection, "remove");
+        Servlet thread_restore = new ThreadRemoveServlet(mainConnection, "restore");
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
@@ -89,6 +92,8 @@ public class Main {
         context.addServlet(new ServletHolder(thread_unsubscribe), "/db/api/thread/unsubscribe/");
         context.addServlet(new ServletHolder(thread_open), "/db/api/thread/open/");
         context.addServlet(new ServletHolder(thread_close), "/db/api/thread/close/");
+        context.addServlet(new ServletHolder(thread_remove), "/db/api/thread/remove/");
+        context.addServlet(new ServletHolder(thread_restore), "/db/api/thread/restore/");
 
         Server server = new Server(port);
         server.setHandler(context);
