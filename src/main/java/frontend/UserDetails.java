@@ -143,11 +143,11 @@ public class UserDetails extends HttpServlet {
             try{if (stmt != null){
                 stmt.close();
                 }
-            } catch(SQLException se) { /*can't do anything */ }
+            } catch(SQLException se) {}
             try{if (rs != null){
                 rs.close();
                 }
-            } catch(SQLException se) { /*can't do anything */ }
+            } catch(SQLException se) {}
 
 
         }

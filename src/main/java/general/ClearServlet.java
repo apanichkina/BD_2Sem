@@ -30,8 +30,8 @@ public class ClearServlet extends HttpServlet {
         try{
             stmt = con.createStatement();
             stmt.executeUpdate("SET foreign_key_checks = 0;");
-
             stmt.executeUpdate("TRUNCATE `forumdb`.`Follow`;");
+            stmt.executeUpdate("TRUNCATE `forumdb`.`Subscription`;");
             stmt.executeUpdate("TRUNCATE `forumdb`.`User`;");
             stmt.executeUpdate("TRUNCATE `forumdb`.`Post`;");
             stmt.executeUpdate("TRUNCATE `forumdb`.`Forum`;");

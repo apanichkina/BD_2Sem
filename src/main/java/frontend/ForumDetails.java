@@ -87,12 +87,12 @@ public class ForumDetails extends HttpServlet {
                 if (stmt != null) {
                     stmt.close();
                 }
-            } catch (SQLException se) { /*can't do anything */ }
+            } catch (SQLException se) {}
             try {
                 if (rs != null) {
                     rs.close();
                 }
-            } catch (SQLException se) { /*can't do anything */ }
+            } catch (SQLException se) {}
 
         }
         response.setContentType("application/json; charset=utf-8");

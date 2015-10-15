@@ -1,12 +1,9 @@
-package user;
-
-/**
- * Created by anna on 15.10.15.
- */
+package forum;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import frontend.UserDetails;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -19,13 +16,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-
-
-public class UserCreateServlet  extends HttpServlet {
-
+/**
+ * Created by anna on 15.10.15.
+ */
+public class ForumCreateServlet extends HttpServlet {
     private Connection con = null;
+    private String query = "INSERT INTO Forum (name,short_name,userID) VALUES (?,?,?)";
 
-    public UserCreateServlet(Connection connect) {
+
+
+    public ForumCreateServlet(Connection connect) {
         con = connect;
     }
 
@@ -40,42 +40,48 @@ public class UserCreateServlet  extends HttpServlet {
         result.add("response", responseJSON);
 
         Gson gson = new Gson();
+
+
         try {
 
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-            String email = json.get("email").getAsString();
-            String username = json.get("username").getAsString();
-            String about = json.get("about").getAsString();
             String name = json.get("name").getAsString();
-            Boolean anonymous = false;
+            String short_name = json.get("short_name").getAsString();
+            int userID = UserDetails.GetID(json.get("user").getAsString(), "email", "User", con);
 
-            JsonElement new_anonymous = json.get("isAnonymous");
-            if (new_anonymous != null) {
-                anonymous = new_anonymous.getAsBoolean();
-            }
-
-            String query = "INSERT INTO User (email, username, about, name, isAnonymous) VALUES(?,?,?,?,?)";
 
             stmt = con.prepareStatement(query);
-            stmt.setString(1, email);
-            stmt.setString(2, username);
-            stmt.setString(3, about);
-            stmt.setString(4, name);
-            stmt.setBoolean(5, anonymous);
+            stmt.setString(1, name);
+            stmt.setString(2, short_name);
+            stmt.setInt(3, userID);
+
+
+
+
             if (stmt.executeUpdate() != 1) throw new SQLException();
+            rs = stmt.executeQuery("select last_insert_id() as last_id from Forum");
+            int last_id = 0;
+            while (rs.next()){
+                last_id = rs.getInt("last_id");
+            }
+            System.out.println(last_id);
+
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
             result.addProperty("code", "2");
             result.addProperty("response", "err2");
         }
+
         catch (java.lang.NullPointerException npEx) {
             result.addProperty("code", "3");
             result.addProperty("response", "err3");
         }
+
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", "5");
-            result.addProperty("response", "err5");
+            result.addProperty("code", "3");
+            result.addProperty("response", "error3");
         }
+
         catch (SQLException sqlEx) {
             result.addProperty("code", "4");
             result.addProperty("response", "err4");
@@ -86,7 +92,7 @@ public class UserCreateServlet  extends HttpServlet {
                 if (stmt != null) {
                     stmt.close();
                 }
-            } catch (SQLException se)  {}
+            } catch (SQLException se) {}
             try {
                 if (rs != null) {
                     rs.close();
