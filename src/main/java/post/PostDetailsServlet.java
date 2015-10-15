@@ -1,10 +1,10 @@
 package post;
 
 import com.google.gson.JsonObject;
-import frontend.ForumDetails;
-import frontend.UserDetails;
+import forum.ForumDetailsServlet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import user.UserDetailsServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -58,10 +58,10 @@ public class PostDetailsServlet extends HttpServlet{
 
             if (related.contains("forum")){
                 JsonObject forum_relatedJSON = new JsonObject();
-                ForumDetails.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить!!!!!!!
+                ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить как быстрее с join или так
                 responseJSON.add("forum",forum_relatedJSON);
             }
-            else responseJSON.addProperty("forum", rs.getInt("forumID")); ///TODO заменить на short_name после join
+            else responseJSON.addProperty("forum", rs.getInt("forumID"));
 
             responseJSON.addProperty("message", rs.getString("message"));
             responseJSON.addProperty("isApproved", rs.getBoolean("isApproved"));
@@ -72,9 +72,9 @@ public class PostDetailsServlet extends HttpServlet{
             responseJSON.addProperty("likes", rs.getInt("likes"));
             responseJSON.addProperty("dislikes", rs.getInt("dislikes"));
             responseJSON.addProperty("points", rs.getInt("points"));
-            if (related.contains("user")) {//TODO проверить, что reladed массив
+            if (related.contains("user")) {
                 JsonObject user_relatedJSON = new JsonObject();
-                UserDetails.UsDet(rs.getInt("authorID"),user_relatedJSON, con);
+                UserDetailsServlet.UsDet(rs.getInt("authorID"), user_relatedJSON, con);
                 responseJSON.add("user",user_relatedJSON);
             }
             else responseJSON.addProperty("user", rs.getString("email"));

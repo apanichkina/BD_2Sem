@@ -3,8 +3,8 @@ package post;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import frontend.UserDetails;
 import org.jetbrains.annotations.NotNull;
+import user.UserDetailsServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -49,8 +49,8 @@ public class PostCreateServlet extends HttpServlet{
             String date = json.get("date").getAsString();
             int threadID = json.get("thread").getAsInt();
             String message = json.get("message").getAsString();
-            int authorID = UserDetails.GetID(json.get("user").getAsString(), "email", "User", con);
-            int forumID = UserDetails.GetID(json.get("forum").getAsString(),"short_name", "Forum", con);
+            int authorID = UserDetailsServlet.GetID(json.get("user").getAsString(), "email", "User", con);
+            int forumID = UserDetailsServlet.GetID(json.get("forum").getAsString(), "short_name", "Forum", con);
             Integer parentID = null;
             Boolean isApproved = false;
             Boolean isHighlighted = false;

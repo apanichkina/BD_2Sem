@@ -1,33 +1,35 @@
-package frontend;
+package user;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
- * Created by anna on 09.10.15.
+ * Created by anna on 15.10.15.
  */
-public class UserDetails extends HttpServlet {
+public class UserDetailsServlet extends HttpServlet {
 
     private Connection con = null;
     private String table_name = "";
-    public UserDetails(Connection connect, String table) {
+    public UserDetailsServlet(Connection connect, String table) {
         con = connect;
         table_name = table;
     }
-    public static  PreparedStatement stmt = null;
+    public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
 
-    public static void UsDet(int curr_id, @Nullable JsonObject  responseJSON , Connection con) throws IOException, SQLException {
+    public static void UsDet(int curr_id, @Nullable JsonObject responseJSON , Connection con) throws IOException, SQLException {
 
         String query_userDetails = "SELECT * FROM User WHERE id=?";
         PreparedStatement stmt = con.prepareStatement(query_userDetails);
@@ -57,10 +59,10 @@ public class UserDetails extends HttpServlet {
         responseJSON.add("subscriptions", subscriptions_list);
         ////4 qvery
         String query_following = "SELECT email \n" +
-                                    "FROM Follow \n" +
-                                    "LEFT JOIN User\n" +
-                                    "ON Follow.followeeID=User.id\n" +
-                                    "WHERE followerID= ?";
+                "FROM Follow \n" +
+                "LEFT JOIN User\n" +
+                "ON Follow.followeeID=User.id\n" +
+                "WHERE followerID= ?";
         stmt = con.prepareStatement(query_following);
         stmt.setInt(1, curr_id);
         rs = stmt.executeQuery();
@@ -71,10 +73,10 @@ public class UserDetails extends HttpServlet {
         responseJSON.add("following", following_list);
         /////5 qvery
         String query_followers = "SELECT email \n" +
-                                    "FROM Follow \n" +
-                                    "LEFT JOIN User\n" +
-                                    "ON Follow.followerID=User.id\n" +
-                                    "WHERE followeeID= ?";
+                "FROM Follow \n" +
+                "LEFT JOIN User\n" +
+                "ON Follow.followerID=User.id\n" +
+                "WHERE followeeID= ?";
         stmt = con.prepareStatement(query_followers);
         stmt.setInt(1, curr_id);
         rs = stmt.executeQuery();
@@ -142,11 +144,11 @@ public class UserDetails extends HttpServlet {
 
             try{if (stmt != null){
                 stmt.close();
-                }
+            }
             } catch(SQLException se) {}
             try{if (rs != null){
                 rs.close();
-                }
+            }
             } catch(SQLException se) {}
 
 

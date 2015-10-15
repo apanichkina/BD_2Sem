@@ -4,6 +4,7 @@ package main; /**
 
 import connection.AccountService;
 import forum.ForumCreateServlet;
+import forum.ForumDetailsServlet;
 import general.ClearServlet;
 import general.StatusServlet;
 import org.eclipse.jetty.server.Server;
@@ -16,11 +17,14 @@ import org.jetbrains.annotations.NotNull;
 import post.PostCreateServlet;
 import post.PostDetailsServlet;
 import thread.ThreadCreateServlet;
+import thread.ThreadOpenServlet;
+import thread.ThreadSubscribeServlet;
 import user.UserCreateServlet;
+import user.UserDetailsServlet;
+import user.UserUpdateServlet;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class Main {
 
@@ -46,20 +50,24 @@ public class Main {
 
         AccountService accountService = new AccountService();
 
-        Servlet user_details = new UserDetails(mainConnection, "User");
+        Servlet user_details = new UserDetailsServlet(mainConnection, "User");
         Servlet user_listFollowers = new UserListFollowers(mainConnection, "User", "followers");
         Servlet user_listFollowing = new UserListFollowers(mainConnection, "User", "following");
-        Servlet user_updateProfile = new UserUpdateProfile(mainConnection, "User");
+        Servlet user_updateProfile = new UserUpdateServlet(mainConnection, "User");
         Servlet user_unfollow = new UserUnfollow(mainConnection, "User", "unfollow");
         Servlet user_follow = new UserUnfollow(mainConnection, "User", "follow");
         Servlet post_details = new PostDetailsServlet(mainConnection);
-        Servlet forum_details = new ForumDetails(mainConnection, "Forum");
+        Servlet forum_details = new ForumDetailsServlet(mainConnection, "Forum");
         Servlet user_create = new UserCreateServlet(mainConnection);
         Servlet post_create = new PostCreateServlet(mainConnection);
         Servlet status = new StatusServlet(mainConnection);
         Servlet clear = new ClearServlet(mainConnection);
         Servlet thread_create = new ThreadCreateServlet(mainConnection);
         Servlet forum_create = new ForumCreateServlet(mainConnection);
+        Servlet thread_subscribe = new ThreadSubscribeServlet(mainConnection, "subscribe");
+        Servlet thread_unsubscribe = new ThreadSubscribeServlet(mainConnection, "unsubscribe");
+        Servlet thread_open = new ThreadOpenServlet(mainConnection, "open");
+        Servlet thread_close = new ThreadOpenServlet(mainConnection, "close");
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
@@ -77,6 +85,10 @@ public class Main {
         context.addServlet(new ServletHolder(clear), "/db/api/clear/");
         context.addServlet(new ServletHolder(thread_create), "/db/api/thread/create/");
         context.addServlet(new ServletHolder(forum_create), "/db/api/forum/create/");
+        context.addServlet(new ServletHolder(thread_subscribe), "/db/api/thread/subscribe/");
+        context.addServlet(new ServletHolder(thread_unsubscribe), "/db/api/thread/unsubscribe/");
+        context.addServlet(new ServletHolder(thread_open), "/db/api/thread/open/");
+        context.addServlet(new ServletHolder(thread_close), "/db/api/thread/close/");
 
         Server server = new Server(port);
         server.setHandler(context);

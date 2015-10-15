@@ -10,15 +10,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
+
 import com.google.gson.Gson;
-import java.io.BufferedReader;
-import org.json.*;
-import com.google.gson.JsonElement;
 
 
 import com.google.gson.JsonObject;
+import user.UserDetailsServlet;
 
 /**
  * Created by anna on 12.10.15.
@@ -58,8 +55,8 @@ public class UserUnfollow extends HttpServlet {
         try {
 
             //con = DriverManager.getConnection(URL_DB, USER_DB, PASSWORD_DB);
-            int follower_id = UserDetails.GetID(follower, "email", table_name, con);
-            int followee_id = UserDetails.GetID(followee, "email", table_name, con);
+            int follower_id = UserDetailsServlet.GetID(follower, "email", table_name, con);
+            int followee_id = UserDetailsServlet.GetID(followee, "email", table_name, con);
 
 
             stmt = con.prepareStatement(query);

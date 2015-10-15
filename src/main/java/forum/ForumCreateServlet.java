@@ -1,10 +1,9 @@
 package forum;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import frontend.UserDetails;
 import org.jetbrains.annotations.NotNull;
+import user.UserDetailsServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -47,7 +46,7 @@ public class ForumCreateServlet extends HttpServlet {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String name = json.get("name").getAsString();
             String short_name = json.get("short_name").getAsString();
-            int userID = UserDetails.GetID(json.get("user").getAsString(), "email", "User", con);
+            int userID = UserDetailsServlet.GetID(json.get("user").getAsString(), "email", "User", con);
 
 
             stmt = con.prepareStatement(query);

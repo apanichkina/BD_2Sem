@@ -1,8 +1,9 @@
-package frontend;
+package forum;
 
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import user.UserDetailsServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -17,12 +18,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 /**
- * Created by anna on 14.10.15.
+ * Created by anna on 15.10.15.
  */
-public class ForumDetails extends HttpServlet {
+
+
+public class ForumDetailsServlet extends HttpServlet {
     private Connection con = null;
     private String table_name = "";
-    public ForumDetails(Connection connect, String table) {
+    public ForumDetailsServlet(Connection connect, String table) {
         table_name = table;
         con = connect;
     }
@@ -43,7 +46,7 @@ public class ForumDetails extends HttpServlet {
             responseJSON.addProperty("short_name", rs.getString("short_name"));
             if (related.contains("user")) {
                 JsonObject user_relatedJSON = new JsonObject();
-                UserDetails.UsDet(rs.getInt("userID"),user_relatedJSON,con);
+                UserDetailsServlet.UsDet(rs.getInt("userID"), user_relatedJSON, con);
                 responseJSON.add("user",user_relatedJSON);
             }
             else responseJSON.addProperty("user", rs.getString("email"));
@@ -76,7 +79,7 @@ public class ForumDetails extends HttpServlet {
 
 
         try {
-            int curr_id = UserDetails.GetID(curr_short_name, "short_name", table_name, con);
+            int curr_id = UserDetailsServlet.GetID(curr_short_name, "short_name", table_name, con);
             ForumDet(curr_id, responseJSON, con, related);
             result.add("response", responseJSON);
 
@@ -99,4 +102,5 @@ public class ForumDetails extends HttpServlet {
         response.getWriter().println(result);
     }
 }
+
 
