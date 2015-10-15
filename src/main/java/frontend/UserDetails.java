@@ -27,13 +27,13 @@ public class UserDetails extends HttpServlet {
     public static  PreparedStatement stmt = null;
     public static ResultSet rs = null;
 
-    public static void UsDet(int curr_id,PreparedStatement stmt,ResultSet rs, @Nullable JsonObject  responseJSON , Connection con) throws IOException, SQLException {
+    public static void UsDet(int curr_id, @Nullable JsonObject  responseJSON , Connection con) throws IOException, SQLException {
 
         String query_userDetails = "SELECT * FROM User WHERE id=?";
-        stmt = con.prepareStatement(query_userDetails);
+        PreparedStatement stmt = con.prepareStatement(query_userDetails);
         stmt.setInt(1, curr_id);
         //TODO проверить везде сработал ли запрос посредством проверки возвращаемого значения
-        rs = stmt.executeQuery();
+        ResultSet rs = stmt.executeQuery();
         //TODO проверить валидность данных
         while (rs.next()) {
             responseJSON.addProperty("id", rs.getInt("id"));
@@ -83,19 +83,38 @@ public class UserDetails extends HttpServlet {
             followers_list.add(rs.getString("email"));
         }
         responseJSON.add("followers", followers_list);
-
+        try {
+            if (stmt != null) {
+                stmt.close();
+            }
+        } catch (SQLException se) {}
+        try {
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (SQLException se) {}
 
     };
 
-    public static int GetID (String row_value, String row_name, String table_name, Connection con,  PreparedStatement stmt, ResultSet rs) throws SQLException {
+    public static int GetID (String row_value, String row_name, String table_name, Connection con) throws SQLException {
         int curr_id = 0;
+
+
         String query_getID = "SELECT id FROM "+ table_name+" WHERE "+row_name+"=?";
-        stmt = con.prepareStatement(query_getID);
+        PreparedStatement stmt = con.prepareStatement(query_getID);
         stmt.setString(1, row_value);
-        rs = stmt.executeQuery();
+        ResultSet rs = stmt.executeQuery();
         while (rs.next()) {
             curr_id = rs.getInt("id");
         }
+        try{if (stmt != null){
+            stmt.close();
+        }
+        } catch(SQLException se) {}
+        try{if (rs != null){
+            rs.close();
+        }
+        } catch(SQLException se) {}
         return curr_id;
     };
 
@@ -111,9 +130,9 @@ public class UserDetails extends HttpServlet {
         String curr_email = request.getParameter("user");
         try {
 
-            int curr_id = GetID(curr_email, "email", table_name, con,stmt,rs);
+            int curr_id = GetID(curr_email, "email", table_name, con);
 
-            UsDet(curr_id, stmt, rs, responseJSON, con);
+            UsDet(curr_id,responseJSON, con);
             result.add("response", responseJSON);
 
         } catch (SQLException sqlEx) {

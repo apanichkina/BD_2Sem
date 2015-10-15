@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashSet;
 
 /**
@@ -29,12 +30,12 @@ public class ForumDetails extends HttpServlet {
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
 
-    public static void ForumDet(int curr_id,PreparedStatement stmt,ResultSet rs, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
+    public static void ForumDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
 
         String query_forumDetails = "SELECT Forum.* , User.email FROM Forum LEFT JOIN User ON User.id=Forum.userID WHERE Forum.id=?";
-        stmt = con.prepareStatement(query_forumDetails);
+        PreparedStatement stmt = con.prepareStatement(query_forumDetails);
         stmt.setInt(1, curr_id);
-        rs = stmt.executeQuery();
+        ResultSet rs = stmt.executeQuery();
 
         while (rs.next()) {
             responseJSON.addProperty("id", curr_id);
@@ -42,11 +43,21 @@ public class ForumDetails extends HttpServlet {
             responseJSON.addProperty("short_name", rs.getString("short_name"));
             if (related.contains("user")) {
                 JsonObject user_relatedJSON = new JsonObject();
-                UserDetails.UsDet(rs.getInt("userID"),stmt,rs,user_relatedJSON,con);
+                UserDetails.UsDet(rs.getInt("userID"),user_relatedJSON,con);
                 responseJSON.add("user",user_relatedJSON);
             }
             else responseJSON.addProperty("user", rs.getString("email"));
         }
+        try {
+            if (stmt != null) {
+                stmt.close();
+            }
+        } catch (SQLException se) {}
+        try {
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (SQLException se) {}
 
 
     };
@@ -58,14 +69,15 @@ public class ForumDetails extends HttpServlet {
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", "0");
 
-        HashSet<String> related= new HashSet<String>();
-        related.add(request.getParameter("related"));
+
+        HashSet<String> related= new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
         String curr_short_name = request.getParameter("forum");
 
 
+
         try {
-            int curr_id = UserDetails.GetID(curr_short_name, "short_name", table_name, con, stmt, rs);
-            ForumDet(curr_id, stmt, rs, responseJSON, con, related);
+            int curr_id = UserDetails.GetID(curr_short_name, "short_name", table_name, con);
+            ForumDet(curr_id, responseJSON, con, related);
             result.add("response", responseJSON);
 
         } catch (SQLException sqlEx) {

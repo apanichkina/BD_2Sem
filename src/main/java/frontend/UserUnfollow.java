@@ -58,8 +58,8 @@ public class UserUnfollow extends HttpServlet {
         try {
 
             //con = DriverManager.getConnection(URL_DB, USER_DB, PASSWORD_DB);
-            int follower_id = UserDetails.GetID(follower, "email", table_name, con, stmt, rs);
-            int followee_id = UserDetails.GetID(followee, "email", table_name, con, stmt, rs);
+            int follower_id = UserDetails.GetID(follower, "email", table_name, con);
+            int followee_id = UserDetails.GetID(followee, "email", table_name, con);
 
 
             stmt = con.prepareStatement(query);

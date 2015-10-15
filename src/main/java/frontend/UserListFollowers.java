@@ -49,7 +49,7 @@ public class UserListFollowers extends HttpServlet {
         String curr_email = request.getParameter("user");
 
         try {
-            int curr_id = UserDetails.GetID(curr_email, "email", table_name, con, stmt, rs);
+            int curr_id = UserDetails.GetID(curr_email, "email", table_name, con);
 
             stmt = con.prepareStatement(query);
             stmt.setInt(1, curr_id);
@@ -58,7 +58,7 @@ public class UserListFollowers extends HttpServlet {
             JsonArray list = new JsonArray();
             while (rs.next()) {
                 JsonObject responceJS = new JsonObject();
-                UserDetails.UsDet(rs.getInt(field_name), stmt, rs, responceJS, con);
+                UserDetails.UsDet(rs.getInt(field_name),responceJS, con);
                 list.add(responceJS);
 
             }

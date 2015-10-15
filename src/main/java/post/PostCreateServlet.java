@@ -49,8 +49,8 @@ public class PostCreateServlet extends HttpServlet{
             String date = json.get("date").getAsString();
             int threadID = json.get("thread").getAsInt();
             String message = json.get("message").getAsString();
-            int authorID = UserDetails.GetID(json.get("user").getAsString(), "email", "User", con, stmt, rs);
-            int forumID = UserDetails.GetID(json.get("forum").getAsString(),"short_name", "Forum", con, stmt, rs);
+            int authorID = UserDetails.GetID(json.get("user").getAsString(), "email", "User", con);
+            int forumID = UserDetails.GetID(json.get("forum").getAsString(),"short_name", "Forum", con);
             Integer parentID = null;
             Boolean isApproved = false;
             Boolean isHighlighted = false;

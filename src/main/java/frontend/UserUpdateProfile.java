@@ -40,7 +40,7 @@ public class UserUpdateProfile extends HttpServlet {
         result.addProperty("code", "0");
         result.add("response", responseJSON);
         try {
-            int curr_id = UserDetails.GetID(curr_email, "email", table_name, con, stmt, rs);
+            int curr_id = UserDetails.GetID(curr_email, "email", table_name, con);
             String query_updateProfile = "UPDATE `User` SET about = ?, `name`= ? WHERE id= ?";
             stmt = con.prepareStatement(query_updateProfile);
             stmt.setString(1, new_about);

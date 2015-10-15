@@ -31,7 +31,7 @@ public class PostDetailsServlet extends HttpServlet{
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
 
-    public static void PostDet(int curr_id,PreparedStatement stmt,ResultSet rs, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
+    public static void PostDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
         boolean user_related = false;
         boolean thread_related = false;
         boolean forum_related = false;
@@ -40,9 +40,9 @@ public class PostDetailsServlet extends HttpServlet{
         if (related.contains("forum")) forum_related = true;
 
         String query_postDetails = "SELECT Post.* , User.email FROM Post  LEFT JOIN User ON User.id=Post.authorID WHERE Post.id=?";
-        stmt = con.prepareStatement(query_postDetails);
+        PreparedStatement stmt = con.prepareStatement(query_postDetails);
         stmt.setInt(1, curr_id);
-        rs = stmt.executeQuery();
+        ResultSet rs = stmt.executeQuery();
 
 
         while (rs.next()) {
@@ -58,7 +58,7 @@ public class PostDetailsServlet extends HttpServlet{
 
             if (related.contains("forum")){
                 JsonObject forum_relatedJSON = new JsonObject();
-                ForumDetails.ForumDet(rs.getInt("forumID"), stmt, rs, forum_relatedJSON, con, new HashSet<String>()); //TODO проверить!!!!!!!
+                ForumDetails.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить!!!!!!!
                 responseJSON.add("forum",forum_relatedJSON);
             }
             else responseJSON.addProperty("forum", rs.getInt("forumID")); ///TODO заменить на short_name после join
@@ -74,12 +74,21 @@ public class PostDetailsServlet extends HttpServlet{
             responseJSON.addProperty("points", rs.getInt("points"));
             if (related.contains("user")) {//TODO проверить, что reladed массив
                 JsonObject user_relatedJSON = new JsonObject();
-                UserDetails.UsDet(rs.getInt("authorID"), stmt, rs, user_relatedJSON, con);
+                UserDetails.UsDet(rs.getInt("authorID"),user_relatedJSON, con);
                 responseJSON.add("user",user_relatedJSON);
             }
             else responseJSON.addProperty("user", rs.getString("email"));
         }
-
+        try {
+            if (stmt != null) {
+                stmt.close();
+            }
+        } catch (SQLException se) {}
+        try {
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (SQLException se) {}
 
 
     };
@@ -101,7 +110,7 @@ public class PostDetailsServlet extends HttpServlet{
 
 
         try {
-            PostDet(curr_id, stmt, rs, responseJSON, con, related);
+            PostDet(curr_id,responseJSON, con, related);
             result.add("response", responseJSON);
 
         } catch (SQLException sqlEx) {

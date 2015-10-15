@@ -3,6 +3,8 @@ package main; /**
  */
 
 import connection.AccountService;
+import general.ClearServlet;
+import general.StatusServlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -52,7 +54,8 @@ public class Main {
         Servlet forum_details = new ForumDetails(mainConnection, "Forum");
         Servlet user_create = new UserCreateServlet(mainConnection);
         Servlet post_create = new PostCreateServlet(mainConnection);
-
+        Servlet status = new StatusServlet(mainConnection);
+        Servlet clear = new ClearServlet(mainConnection);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
@@ -66,6 +69,8 @@ public class Main {
         context.addServlet(new ServletHolder(forum_details), "/db/api/forum/details/");
         context.addServlet(new ServletHolder(user_create), "/db/api/user/create/");
         context.addServlet(new ServletHolder(post_create), "/db/api/post/create/");
+        context.addServlet(new ServletHolder(status), "/db/api/status/");
+        context.addServlet(new ServletHolder(clear), "/db/api/clear/");
 
         Server server = new Server(port);
         server.setHandler(context);
