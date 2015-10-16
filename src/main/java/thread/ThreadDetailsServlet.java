@@ -1,10 +1,9 @@
-package post;
+package thread;
 
 import com.google.gson.JsonObject;
 import forum.ForumDetailsServlet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import thread.ThreadDetailsServlet;
 import user.UserDetailsServlet;
 
 import javax.servlet.ServletException;
@@ -20,45 +19,33 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 /**
- * Created by anna on 15.10.15.
+ * Created by anna on 16.10.15.
  */
-public class PostDetailsServlet extends HttpServlet{
+public class ThreadDetailsServlet extends HttpServlet {
     private Connection con = null;
 
-    public PostDetailsServlet(Connection connect) {
+    public ThreadDetailsServlet(Connection connect) {
         con = connect;
     }
 
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
 
-    public static void PostDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
-        boolean user_related = false;
-        boolean thread_related = false;
-        boolean forum_related = false;
-        if (related.contains("user")) user_related = true;
-        if (related.contains("thread")) thread_related = true;
-        if (related.contains("forum")) forum_related = true;
+    public static void ThreadDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
 
-        String query_postDetails = "SELECT Post.* , User.email, Forum.short_name FROM Post \n" +
-                "LEFT JOIN User ON User.id=Post.authorID \n" +
-                "LEFT JOIN Forum ON Forum.id=Post.forumID\n" +
-                "WHERE Post.id=?";
-        PreparedStatement stmt = con.prepareStatement(query_postDetails);
+
+        String query_threadDetails = "SELECT Thread.* , User.email, Forum.short_name FROM Thread  \n" +
+                "LEFT JOIN User ON User.id=Thread.userID \n" +
+                "LEFT JOIN Forum ON Forum.id=Thread.forumID \n" +
+                "WHERE Thread.id=?";
+        PreparedStatement stmt = con.prepareStatement(query_threadDetails);
         stmt.setInt(1, curr_id);
         ResultSet rs = stmt.executeQuery();
 
 
         while (rs.next()) {
             responseJSON.addProperty("id", curr_id);
-            if (related.contains("thread")) {
-                JsonObject thread_relatedJSON = new JsonObject();
-                ThreadDetailsServlet.ThreadDet(rs.getInt("threadID"), thread_relatedJSON, con, new HashSet<String>()); //TODO после создания Thread реализовать
-                responseJSON.add("thread",thread_relatedJSON);
-            }
-            else responseJSON.addProperty("thread", rs.getInt("threadID"));
             responseJSON.addProperty("date", rs.getString("date"));
-
             if (related.contains("forum")){
                 JsonObject forum_relatedJSON = new JsonObject();
                 ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить как быстрее с join или так
@@ -66,25 +53,30 @@ public class PostDetailsServlet extends HttpServlet{
             }
             else responseJSON.addProperty("forum", rs.getString("short_name"));
 
+            responseJSON.addProperty("title", rs.getString("title"));
             responseJSON.addProperty("message", rs.getString("message"));
-            int parent = rs.getInt("parentID");
-            if (parent == 0) responseJSON.addProperty("parent", rs.getString("parentID"));
-            else  responseJSON.addProperty("parent", parent);
-            responseJSON.addProperty("isApproved", rs.getBoolean("isApproved"));
-            responseJSON.addProperty("isHighlighted", rs.getBoolean("isHighlighted"));
-            responseJSON.addProperty("isEdited", rs.getBoolean("isEdited"));
-            responseJSON.addProperty("isSpam", rs.getBoolean("isSpam"));
+            responseJSON.addProperty("slug", rs.getString("slug"));
+            responseJSON.addProperty("isClosed", rs.getBoolean("isClosed"));
             responseJSON.addProperty("isDeleted", rs.getBoolean("isDelited"));
             responseJSON.addProperty("likes", rs.getInt("likes"));
             responseJSON.addProperty("dislikes", rs.getInt("dislikes"));
             responseJSON.addProperty("points", rs.getInt("points"));
+
             if (related.contains("user")) {
                 JsonObject user_relatedJSON = new JsonObject();
-                UserDetailsServlet.UsDet(rs.getInt("authorID"), user_relatedJSON, con);
+                UserDetailsServlet.UsDet(rs.getInt("userID"), user_relatedJSON, con);
                 responseJSON.add("user",user_relatedJSON);
             }
             else responseJSON.addProperty("user", rs.getString("email"));
         }
+        String query_posts = "SELECT count(id) FROM Post WHERE threadID=? and isDelited=false";
+        stmt = con.prepareStatement(query_posts);
+        stmt.setInt(1, curr_id);
+        rs = stmt.executeQuery();
+        rs.next();
+
+        int posts = rs.getInt(1);
+        responseJSON.addProperty("posts", posts);
         try {
             if (stmt != null) {
                 stmt.close();
@@ -106,19 +98,18 @@ public class PostDetailsServlet extends HttpServlet{
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
 
-        String input_id = request.getParameter("post");
+        String input_id = request.getParameter("thread");
         int curr_id = Integer.parseInt(input_id);//TODO проперить валидность
 
         HashSet<String> related = new HashSet<>();
         if (request.getParameter("related") != null) {
             HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
             related = curr_related;
-
         }
 
 
         try {
-            PostDet(curr_id,responseJSON, con, related);
+            ThreadDet(curr_id,responseJSON, con, related);
             result.add("response", responseJSON);
 
         } catch (SQLException sqlEx) {

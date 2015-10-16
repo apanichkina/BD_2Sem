@@ -1,8 +1,9 @@
-package user;
+package thread;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
+import user.UserDetailsServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,19 +14,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 
 /**
- * Created by anna on 15.10.15.
+ * Created by anna on 17.10.15.
  */
-public class UserUpdateServlet extends HttpServlet {
+public class ThreadUpdateServlet extends HttpServlet{
     private Connection con = null;
-    private String table_name = "";
 
-    public UserUpdateServlet(Connection connect, String table) {
+
+    public ThreadUpdateServlet(Connection connect) {
         con = connect;
-        table_name = table;
     }
-
 
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
@@ -35,32 +35,31 @@ public class UserUpdateServlet extends HttpServlet {
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         Gson gson = new Gson();
-        JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-        String new_about = json.get("about").getAsString();
-        String new_name = json.get("name").getAsString();
-        String curr_email = json.get("user").getAsString();
 
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
         try {
-            int curr_id = UserDetailsServlet.GetID(curr_email, "email", table_name, con);
-            String query_updateProfile = "UPDATE `User` SET about = ?, `name`= ? WHERE id= ?";
-            stmt = con.prepareStatement(query_updateProfile);
-            stmt.setString(1, new_about);
-            stmt.setString(2, new_name);
+            JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
+            String new_message = json.get("message").getAsString();
+            String new_slug = json.get("slug").getAsString();
+            int curr_id = json.get("thread").getAsInt();
+
+            String query_update = "UPDATE `Thread` SET message = ?, slug = ? WHERE id= ?";
+            stmt = con.prepareStatement(query_update);
+            stmt.setString(1, new_message);
+            stmt.setString(2, new_slug);
             stmt.setInt(3, curr_id);
             stmt.executeUpdate();
 
-            UserDetailsServlet.UsDet(curr_id,responseJSON, con);
+            ThreadDetailsServlet.ThreadDet(curr_id,responseJSON,con,new HashSet<String>());
             result.add("response", responseJSON);
 
 
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         } finally {
-            //close connection ,stmt and resultset here
             try {
                 if (stmt != null) {
                     stmt.close();

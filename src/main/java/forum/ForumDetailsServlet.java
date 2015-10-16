@@ -70,22 +70,40 @@ public class ForumDetailsServlet extends HttpServlet {
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
-        result.addProperty("code", "0");
-
-
-        HashSet<String> related= new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
-        String curr_short_name = request.getParameter("forum");
-
-
+        result.addProperty("code", 0);
 
         try {
+            HashSet<String> related = new HashSet<>();
+            if (request.getParameter("related") != null) {
+                HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
+                related = curr_related;
+
+            }
+
+            String curr_short_name = request.getParameter("forum");
+            if (curr_short_name == null) throw new NullPointerException();
+
             int curr_id = UserDetailsServlet.GetID(curr_short_name, "short_name", table_name, con);
+            if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+
+
             ForumDet(curr_id, responseJSON, con, related);
             result.add("response", responseJSON);
 
-        } catch (SQLException sqlEx) {
+        }
+        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            result.addProperty("code", 1);
+            result.addProperty("response", "error1");
+        }
+        catch (java.lang.NullPointerException npEx) {
+            result.addProperty("code", 3);
+            result.addProperty("response", "er3");
+        }
+        catch (SQLException sqlEx) {
+            result.addProperty("code", 4);
+            result.addProperty("response", "error4");
             sqlEx.printStackTrace();
-        } finally {
+        }finally {
             try {
                 if (stmt != null) {
                     stmt.close();

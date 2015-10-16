@@ -25,7 +25,7 @@ public class ClearServlet extends HttpServlet {
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
         JsonObject result = new JsonObject();
-        result.addProperty("code", "0");
+        result.addProperty("code", 0);
         result.addProperty("response", "ОК");
         try{
             stmt = con.createStatement();

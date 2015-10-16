@@ -18,18 +18,12 @@ import java.sql.SQLException;
 /**
  * Created by anna on 16.10.15.
  */
-public class ThreadOpenServlet extends HttpServlet{
+public class ThreadVoteServlet extends HttpServlet{
     private Connection con = null;
     private String query = "";
-
-    public ThreadOpenServlet(Connection connect,String param) {
+    private Boolean isSubscribe = null;
+    public ThreadVoteServlet(Connection connect) {
         con = connect;
-        if (param.equals("open")) {
-            query = "UPDATE Thread SET isClosed=false WHERE id=?";
-        }
-        if (param.equals("close")) {
-            query = "UPDATE Thread SET isClosed=true WHERE id=?";
-        }
     }
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
@@ -45,14 +39,24 @@ public class ThreadOpenServlet extends HttpServlet{
         try {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             int threadID = json.get("thread").getAsInt();
+            int vote = json.get("vote").getAsInt();
+
+            String param = null;
+            if (vote > 0) param = "likes";
+            else param = "dislikes";
+
+            String query = "UPDATE Thread SET "+param+"="+param+"+1, points=points+"+vote+" WHERE id=?";
 
 
             stmt = con.prepareStatement(query);
             stmt.setInt(1, threadID);
 
-            if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
-            responseJSON.addProperty("thread", threadID);
+            if (stmt.executeUpdate() != 1)  throw new SQLException();
+                //if (isSubscribe) throw new SQLException();
+                //else  throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+
+
         }
 
         catch (com.google.gson.JsonSyntaxException jsEx) {
@@ -90,4 +94,5 @@ public class ThreadOpenServlet extends HttpServlet{
 
 
     }
+
 }

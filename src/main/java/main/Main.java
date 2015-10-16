@@ -16,10 +16,8 @@ import frontend.*;
 import org.jetbrains.annotations.NotNull;
 import post.PostCreateServlet;
 import post.PostDetailsServlet;
-import thread.ThreadCreateServlet;
-import thread.ThreadOpenServlet;
-import thread.ThreadRemoveServlet;
-import thread.ThreadSubscribeServlet;
+import post.PostRemoveServlet;
+import thread.*;
 import user.UserCreateServlet;
 import user.UserDetailsServlet;
 import user.UserUpdateServlet;
@@ -71,6 +69,11 @@ public class Main {
         Servlet thread_close = new ThreadOpenServlet(mainConnection, "close");
         Servlet thread_remove = new ThreadRemoveServlet(mainConnection, "remove");
         Servlet thread_restore = new ThreadRemoveServlet(mainConnection, "restore");
+        Servlet thread_details = new ThreadDetailsServlet(mainConnection);
+        Servlet post_remove = new PostRemoveServlet(mainConnection,"remove");
+        Servlet post_restore = new PostRemoveServlet(mainConnection,"restore");
+        Servlet thread_vote = new ThreadVoteServlet(mainConnection);
+        Servlet thread_update = new ThreadUpdateServlet(mainConnection);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
@@ -94,6 +97,11 @@ public class Main {
         context.addServlet(new ServletHolder(thread_close), "/db/api/thread/close/");
         context.addServlet(new ServletHolder(thread_remove), "/db/api/thread/remove/");
         context.addServlet(new ServletHolder(thread_restore), "/db/api/thread/restore/");
+        context.addServlet(new ServletHolder(thread_details), "/db/api/thread/details/");
+        context.addServlet(new ServletHolder(post_remove), "/db/api/post/remove/");
+        context.addServlet(new ServletHolder(post_restore), "/db/api/post/restore/");
+        context.addServlet(new ServletHolder(thread_vote), "/db/api/thread/vote/");
+        context.addServlet(new ServletHolder(thread_update), "/db/api/thread/update/");
 
         Server server = new Server(port);
         server.setHandler(context);

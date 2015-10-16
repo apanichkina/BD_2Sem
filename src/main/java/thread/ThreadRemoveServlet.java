@@ -37,7 +37,7 @@ public class ThreadRemoveServlet extends HttpServlet{
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
-        result.addProperty("code", "0");
+        result.addProperty("code", 0);
         result.add("response", responseJSON);
 
         Gson gson = new Gson();
@@ -55,19 +55,19 @@ public class ThreadRemoveServlet extends HttpServlet{
         }
 
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", "2");
+            result.addProperty("code", 2);
             result.addProperty("response", "err2");
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", "3");
+            result.addProperty("code", 3);
             result.addProperty("response", "err3");
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", "3");
+            result.addProperty("code", 3);
             result.addProperty("response", "err3");
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", "4");
+            result.addProperty("code", 4);
             result.addProperty("response", "err4");
 
             sqlEx.printStackTrace();

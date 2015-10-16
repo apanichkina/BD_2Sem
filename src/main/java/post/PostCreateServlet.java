@@ -11,10 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 /**
  * Created by anna on 15.10.15.
@@ -35,29 +32,30 @@ public class PostCreateServlet extends HttpServlet{
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
-        result.addProperty("code", "0");
+        result.addProperty("code", 0);
         result.add("response", responseJSON);
 
         Gson gson = new Gson();
 
-        String query_with_parent = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited,parentID) \n" +
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+
 
         try {
 
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String date = json.get("date").getAsString();
+
             int threadID = json.get("thread").getAsInt();
             String message = json.get("message").getAsString();
-            int authorID = UserDetailsServlet.GetID(json.get("user").getAsString(), "email", "User", con);
-            int forumID = UserDetailsServlet.GetID(json.get("forum").getAsString(), "short_name", "Forum", con);
+            String user = json.get("user").getAsString();
+            int authorID = UserDetailsServlet.GetID(user, "email", "User", con);
+            String forum = json.get("forum").getAsString();
+            int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
             Integer parentID = null;
             Boolean isApproved = false;
             Boolean isHighlighted = false;
             Boolean isEdited = false;
             Boolean isSpam = false;
             Boolean isDelited = false;
-
 
 
             JsonElement new_isApproved = json.get("isApproved");
@@ -76,17 +74,19 @@ public class PostCreateServlet extends HttpServlet{
             if (new_isSpam != null) {
                 isSpam = new_isSpam.getAsBoolean();
             }
-            JsonElement new_isDelited = json.get("isDelited");
+            JsonElement new_isDelited = json.get("isDeleted");
             if (new_isDelited != null) {
                 isDelited = new_isDelited.getAsBoolean();
             }
             JsonElement new_parentID = json.get("parent");
             if (new_parentID != null) {
                 parentID = new_parentID.getAsInt();
-                query = query_with_parent;
+                //query = query_with_parent;
             }
 
-            stmt = con.prepareStatement(query);
+            String query_with_parent = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited,parentID) \n" +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,"+parentID+")";
+            stmt = con.prepareStatement(query_with_parent, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, date);
             stmt.setInt(2, threadID);
             stmt.setString(3, message);
@@ -97,27 +97,45 @@ public class PostCreateServlet extends HttpServlet{
             stmt.setBoolean(8, isEdited);
             stmt.setBoolean(9, isSpam);
             stmt.setBoolean(10, isDelited);
-            if (parentID != null) stmt.setInt(11, parentID);
+
 
             if (stmt.executeUpdate() != 1) throw new SQLException();
 
+            rs = stmt.getGeneratedKeys();
+            rs.next();
+            responseJSON.addProperty("id", rs.getInt(1));
+            responseJSON.addProperty("date", date);
+            responseJSON.addProperty("thread", threadID);
+            responseJSON.addProperty("message", message);
+            responseJSON.addProperty("user", user);
+            responseJSON.addProperty("forum", forum);
+            responseJSON.addProperty("parent", parentID);
+            responseJSON.addProperty("isApproved", isApproved);
+            responseJSON.addProperty("isHighlighted", isHighlighted);
+            responseJSON.addProperty("isEdited", isEdited);
+            responseJSON.addProperty("isSpam", isSpam);
+            responseJSON.addProperty("isDeleted", isDelited);
+
+
+
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", "2");
+            result.addProperty("code", 2);
             result.addProperty("response", "err2");
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", "3");
+            result.addProperty("code", 3);
             result.addProperty("response", "err3");
         }
 
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", "3");
+            result.addProperty("code", 3);
             result.addProperty("response", "error3");
         }
 
+
         catch (SQLException sqlEx) {
-            result.addProperty("code", "4");
+            result.addProperty("code", 4);
             result.addProperty("response", "err4");
 
             sqlEx.printStackTrace();

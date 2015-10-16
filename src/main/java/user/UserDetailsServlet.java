@@ -1,7 +1,10 @@
 package user;
 
-import com.google.gson.JsonArray;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -99,9 +102,7 @@ public class UserDetailsServlet extends HttpServlet {
     };
 
     public static int GetID (String row_value, String row_name, String table_name, Connection con) throws SQLException {
-        int curr_id = 0;
-
-
+        int curr_id = -1;
         String query_getID = "SELECT id FROM "+ table_name+" WHERE "+row_name+"=?";
         PreparedStatement stmt = con.prepareStatement(query_getID);
         stmt.setString(1, row_value);
@@ -127,20 +128,33 @@ public class UserDetailsServlet extends HttpServlet {
 
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
-        result.addProperty("code", "0");
-
-        String curr_email = request.getParameter("user");
+        result.addProperty("code", 0);
         try {
 
+            String curr_email = request.getParameter("user");
+            if (curr_email == null) throw new NullPointerException();
+
             int curr_id = GetID(curr_email, "email", table_name, con);
+            if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
             UsDet(curr_id,responseJSON, con);
             result.add("response", responseJSON);
 
-        } catch (SQLException sqlEx) {
+
+        }
+        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            result.addProperty("code", 1);
+            result.addProperty("response", "error1");
+        }
+        catch (java.lang.NullPointerException npEx) {
+            result.addProperty("code", 3);
+            result.addProperty("response", "er3");
+        }
+        catch (SQLException sqlEx) {
+            result.addProperty("code", 4);
+            result.addProperty("response", "error4");
             sqlEx.printStackTrace();
         } finally {
-            //close connection ,stmt and resultset here
 
             try{if (stmt != null){
                 stmt.close();
@@ -154,9 +168,9 @@ public class UserDetailsServlet extends HttpServlet {
 
         }
 
-        response.setContentType("application/json; charset=utf-8");
+        //response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-        //response.getWriter().println(JsonGenerator.getJson(pageVariables));
+
     }
 
 

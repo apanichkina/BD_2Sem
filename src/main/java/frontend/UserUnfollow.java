@@ -49,7 +49,7 @@ public class UserUnfollow extends HttpServlet {
 
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
-        result.addProperty("code", "0");
+        result.addProperty("code", 0);
         result.add("response", responseJSON);
 
         try {

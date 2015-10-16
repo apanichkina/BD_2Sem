@@ -1,9 +1,8 @@
-package thread;
+package post;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
-import user.UserDetailsServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,17 +17,17 @@ import java.sql.SQLException;
 /**
  * Created by anna on 16.10.15.
  */
-public class ThreadOpenServlet extends HttpServlet{
+public class PostRemoveServlet extends HttpServlet {
     private Connection con = null;
     private String query = "";
 
-    public ThreadOpenServlet(Connection connect,String param) {
+    public PostRemoveServlet(Connection connect,String param) {
         con = connect;
-        if (param.equals("open")) {
-            query = "UPDATE Thread SET isClosed=false WHERE id=?";
+        if (param.equals("remove")) {
+            query = "UPDATE Post SET isDelited=true WHERE id=?";
         }
-        if (param.equals("close")) {
-            query = "UPDATE Thread SET isClosed=true WHERE id=?";
+        if (param.equals("restore")) {
+            query = "UPDATE Post SET isDelited=false WHERE id=?";
         }
     }
     public PreparedStatement stmt = null;
@@ -44,15 +43,15 @@ public class ThreadOpenServlet extends HttpServlet{
         Gson gson = new Gson();
         try {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-            int threadID = json.get("thread").getAsInt();
+            int postID = json.get("post").getAsInt();
 
 
-            stmt = con.prepareStatement(query);
-            stmt.setInt(1, threadID);
+            stmt = con.prepareStatement(query);//TODO повесить триггер на изменение этого поля, чтобы все посты в теме преагировали
+            stmt.setInt(1, postID);
 
             if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
-            responseJSON.addProperty("thread", threadID);
+            responseJSON.addProperty("post", postID);
         }
 
         catch (com.google.gson.JsonSyntaxException jsEx) {

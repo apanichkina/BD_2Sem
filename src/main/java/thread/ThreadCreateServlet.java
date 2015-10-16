@@ -11,10 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 /**
  * Created by anna on 15.10.15.
@@ -35,7 +32,7 @@ public class ThreadCreateServlet extends HttpServlet {
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
-        result.addProperty("code", "0");
+        result.addProperty("code", 0);
         result.add("response", responseJSON);
 
         Gson gson = new Gson();
@@ -44,9 +41,11 @@ public class ThreadCreateServlet extends HttpServlet {
         try {
 
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-            int forumID = UserDetailsServlet.GetID(json.get("forum").getAsString(), "short_name", "Forum", con);
+            String forum = json.get("forum").getAsString();
+            int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
             String title = json.get("title").getAsString();
-            int userID = UserDetailsServlet.GetID(json.get("user").getAsString(), "email", "User", con);
+            String user = json.get("user").getAsString();
+            int userID = UserDetailsServlet.GetID(user, "email", "User", con);
             String date = json.get("date").getAsString();
             String message = json.get("message").getAsString();
             String slug = json.get("slug").getAsString();
@@ -54,12 +53,12 @@ public class ThreadCreateServlet extends HttpServlet {
             Boolean isDelited = false;
 
 
-            JsonElement new_isDelited = json.get("isDelited");
+            JsonElement new_isDelited = json.get("isDeleted");
             if (new_isDelited != null) {
                 isDelited = new_isDelited.getAsBoolean();
             }
 
-            stmt = con.prepareStatement(query);
+            stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             stmt.setInt(1, forumID);
             stmt.setString(2, title);
             stmt.setInt(3, userID);
@@ -71,31 +70,38 @@ public class ThreadCreateServlet extends HttpServlet {
 
 
             if (stmt.executeUpdate() != 1) throw new SQLException();
-            rs = stmt.executeQuery("select last_insert_id() as last_id from Thread");
-            int last_id = 0;
-            while (rs.next()){
-                last_id = rs.getInt("last_id");
-            }
-            System.out.println(last_id);
+
+            rs = stmt.getGeneratedKeys();
+            rs.next();
+            responseJSON.addProperty("id", rs.getInt(1));
+            responseJSON.addProperty("forum", forum);
+            responseJSON.addProperty("title", title);
+            responseJSON.addProperty("isClosed", isClosed);
+            responseJSON.addProperty("user", user);
+            responseJSON.addProperty("date", date);
+            responseJSON.addProperty("message", message);
+            responseJSON.addProperty("slug", slug);
+            responseJSON.addProperty("isDeleted", isDelited);
+
 
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", "2");
+            result.addProperty("code", 2);
             result.addProperty("response", "err2");
         }
 
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", "3");
+            result.addProperty("code", 3);
             result.addProperty("response", "err3");
         }
 
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", "3");
+            result.addProperty("code", 3);
             result.addProperty("response", "error3");
         }
 
         catch (SQLException sqlEx) {
-            result.addProperty("code", "4");
+            result.addProperty("code", 4);
             result.addProperty("response", "err4");
 
             sqlEx.printStackTrace();

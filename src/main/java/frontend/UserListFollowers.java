@@ -45,7 +45,7 @@ public class UserListFollowers extends HttpServlet {
 
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
-        result.addProperty("code", "0");
+        result.addProperty("code", 0);
 
         String curr_email = request.getParameter("user");
 
