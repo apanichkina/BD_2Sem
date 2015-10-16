@@ -1,9 +1,8 @@
-package thread;
+package post;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
-import user.UserDetailsServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -16,12 +15,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Created by anna on 16.10.15.
+ * Created by anna on 17.10.15.
  */
-public class ThreadVoteServlet extends HttpServlet{
+public class PostVoteServlet extends HttpServlet {
     private Connection con = null;
 
-    public ThreadVoteServlet(Connection connect) {
+    public PostVoteServlet(Connection connect) {
         con = connect;
     }
     public PreparedStatement stmt = null;
@@ -37,23 +36,23 @@ public class ThreadVoteServlet extends HttpServlet{
         Gson gson = new Gson();
         try {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-            int threadID = json.get("thread").getAsInt();
+            int postID = json.get("post").getAsInt();
             int vote = json.get("vote").getAsInt();
 
             String param = null;
             if (vote > 0) param = "likes";
             else param = "dislikes";
 
-            String query = "UPDATE Thread SET "+param+"="+param+"+1, points=points+"+vote+" WHERE id=?";
+            String query = "UPDATE Post SET "+param+"="+param+"+1, points=points+"+vote+" WHERE id=?";
 
 
             stmt = con.prepareStatement(query);
-            stmt.setInt(1, threadID);
+            stmt.setInt(1, postID);
 
 
             if (stmt.executeUpdate() != 1)  throw new SQLException();
-                //if (isSubscribe) throw new SQLException();
-                //else  throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            //if (isSubscribe) throw new SQLException();
+            //else  throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
 
         }
@@ -93,5 +92,4 @@ public class ThreadVoteServlet extends HttpServlet{
 
 
     }
-
 }

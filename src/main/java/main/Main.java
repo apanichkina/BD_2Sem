@@ -14,9 +14,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import javax.servlet.Servlet;
 import frontend.*;
 import org.jetbrains.annotations.NotNull;
-import post.PostCreateServlet;
-import post.PostDetailsServlet;
-import post.PostRemoveServlet;
+import post.*;
 import thread.*;
 import user.UserCreateServlet;
 import user.UserDetailsServlet;
@@ -74,6 +72,8 @@ public class Main {
         Servlet post_restore = new PostRemoveServlet(mainConnection,"restore");
         Servlet thread_vote = new ThreadVoteServlet(mainConnection);
         Servlet thread_update = new ThreadUpdateServlet(mainConnection);
+        Servlet post_update = new PostUpdateServlet(mainConnection);
+        Servlet post_vote = new PostVoteServlet(mainConnection);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
@@ -102,6 +102,8 @@ public class Main {
         context.addServlet(new ServletHolder(post_restore), "/db/api/post/restore/");
         context.addServlet(new ServletHolder(thread_vote), "/db/api/thread/vote/");
         context.addServlet(new ServletHolder(thread_update), "/db/api/thread/update/");
+        context.addServlet(new ServletHolder(post_update), "/db/api/post/update/");
+        context.addServlet(new ServletHolder(post_vote), "/db/api/post/vote/");
 
         Server server = new Server(port);
         server.setHandler(context);
