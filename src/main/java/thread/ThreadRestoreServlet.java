@@ -1,4 +1,4 @@
-package post;
+package thread;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -15,20 +15,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Created by anna on 16.10.15.
+ * Created by anna on 17.10.15.
  */
-public class PostRemoveServlet extends HttpServlet {
+public class ThreadRestoreServlet extends HttpServlet{
     private Connection con = null;
-    private String query = "";
+    private String query =  "UPDATE Thread SET isDelited=false WHERE id=?";
 
-    public PostRemoveServlet(Connection connect,String param) {
+    public ThreadRestoreServlet(Connection connect) {
         con = connect;
-        if (param.equals("remove")) {
-            query = "UPDATE Post SET isDelited=true, delete_count=delete_count+1 WHERE id=?";
-        }
-        if (param.equals("restore")) {
-            query = "UPDATE Post SET isDelited=false, delete_count=delete_count-1 WHERE id=?";
-        }
+
     }
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
@@ -43,15 +38,15 @@ public class PostRemoveServlet extends HttpServlet {
         Gson gson = new Gson();
         try {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-            int postID = json.get("post").getAsInt();
+            int threadID = json.get("thread").getAsInt();
 
 
             stmt = con.prepareStatement(query);//TODO повесить триггер на изменение этого поля, чтобы все посты в теме преагировали
-            stmt.setInt(1, postID);
+            stmt.setInt(1, threadID);
 
             if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
-            responseJSON.addProperty("post", postID);
+            responseJSON.addProperty("thread", threadID);
         }
 
         catch (com.google.gson.JsonSyntaxException jsEx) {

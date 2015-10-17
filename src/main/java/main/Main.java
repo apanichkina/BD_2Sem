@@ -5,6 +5,7 @@ package main; /**
 import connection.AccountService;
 import forum.ForumCreateServlet;
 import forum.ForumDetailsServlet;
+import forum.ForumListPostsServlet;
 import general.ClearServlet;
 import general.StatusServlet;
 import org.eclipse.jetty.server.Server;
@@ -18,6 +19,7 @@ import post.*;
 import thread.*;
 import user.UserCreateServlet;
 import user.UserDetailsServlet;
+import user.UserListPostServlet;
 import user.UserUpdateServlet;
 
 import java.sql.Connection;
@@ -65,8 +67,8 @@ public class Main {
         Servlet thread_unsubscribe = new ThreadSubscribeServlet(mainConnection, "unsubscribe");
         Servlet thread_open = new ThreadOpenServlet(mainConnection, "open");
         Servlet thread_close = new ThreadOpenServlet(mainConnection, "close");
-        Servlet thread_remove = new ThreadRemoveServlet(mainConnection, "remove");
-        Servlet thread_restore = new ThreadRemoveServlet(mainConnection, "restore");
+        Servlet thread_remove = new ThreadRemoveServlet(mainConnection);
+        Servlet thread_restore = new ThreadRestoreServlet(mainConnection);
         Servlet thread_details = new ThreadDetailsServlet(mainConnection);
         Servlet post_remove = new PostRemoveServlet(mainConnection,"remove");
         Servlet post_restore = new PostRemoveServlet(mainConnection,"restore");
@@ -74,6 +76,9 @@ public class Main {
         Servlet thread_update = new ThreadUpdateServlet(mainConnection);
         Servlet post_update = new PostUpdateServlet(mainConnection);
         Servlet post_vote = new PostVoteServlet(mainConnection);
+        Servlet user_listPosts = new UserListPostServlet(mainConnection);
+        Servlet post_list = new PostListServlet(mainConnection);
+        Servlet forum_listPosts = new ForumListPostsServlet(mainConnection);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
@@ -104,6 +109,9 @@ public class Main {
         context.addServlet(new ServletHolder(thread_update), "/db/api/thread/update/");
         context.addServlet(new ServletHolder(post_update), "/db/api/post/update/");
         context.addServlet(new ServletHolder(post_vote), "/db/api/post/vote/");
+        context.addServlet(new ServletHolder(user_listPosts), "/db/api/user/listPosts/");
+        context.addServlet(new ServletHolder(post_list), "/db/api/post/list/");
+        context.addServlet(new ServletHolder(forum_listPosts), "/db/api/forum/listPosts/");
 
         Server server = new Server(port);
         server.setHandler(context);

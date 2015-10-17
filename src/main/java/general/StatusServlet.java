@@ -71,7 +71,7 @@ public class StatusServlet extends HttpServlet {
 
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-        //response.getWriter().println(JsonGenerator.getJson(pageVariables));
+
     }
 
 

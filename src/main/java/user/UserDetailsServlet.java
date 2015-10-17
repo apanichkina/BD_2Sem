@@ -168,7 +168,7 @@ public class UserDetailsServlet extends HttpServlet {
 
         }
 
-        //response.setContentType("application/json; charset=utf-8");
+        response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
 
     }

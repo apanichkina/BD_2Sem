@@ -19,16 +19,10 @@ import java.sql.SQLException;
  */
 public class ThreadRemoveServlet extends HttpServlet{
     private Connection con = null;
-    private String query = "";
-
-    public ThreadRemoveServlet(Connection connect,String param) {
+    private String query_threadDelete = "UPDATE Thread SET isDelited=true WHERE id=?";
+    private String query_postsDelete = "";
+    public ThreadRemoveServlet(Connection connect) {
         con = connect;
-        if (param.equals("remove")) {
-            query = "UPDATE Thread SET isDelited=true WHERE id=?";
-        }
-        if (param.equals("restore")) {
-            query = "UPDATE Thread SET isDelited=false WHERE id=?";
-        }
     }
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
@@ -46,7 +40,7 @@ public class ThreadRemoveServlet extends HttpServlet{
             int threadID = json.get("thread").getAsInt();
 
 
-            stmt = con.prepareStatement(query);//TODO повесить триггер на изменение этого поля, чтобы все посты в теме преагировали
+            stmt = con.prepareStatement(query_threadDelete);//TODO повесить триггер на изменение этого поля, чтобы все посты в теме преагировали
             stmt.setInt(1, threadID);
 
             if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();

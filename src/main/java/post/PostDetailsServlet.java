@@ -33,12 +33,6 @@ public class PostDetailsServlet extends HttpServlet{
     public static ResultSet rs = null;
 
     public static void PostDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
-        boolean user_related = false;
-        boolean thread_related = false;
-        boolean forum_related = false;
-        if (related.contains("user")) user_related = true;
-        if (related.contains("thread")) thread_related = true;
-        if (related.contains("forum")) forum_related = true;
 
         String query_postDetails = "SELECT Post.* , User.email, Forum.short_name FROM Post \n" +
                 "LEFT JOIN User ON User.id=Post.authorID \n" +
