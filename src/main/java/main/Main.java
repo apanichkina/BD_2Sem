@@ -3,9 +3,7 @@ package main; /**
  */
 
 import connection.AccountService;
-import forum.ForumCreateServlet;
-import forum.ForumDetailsServlet;
-import forum.ForumListPostsServlet;
+import forum.*;
 import general.ClearServlet;
 import general.StatusServlet;
 import org.eclipse.jetty.server.Server;
@@ -48,7 +46,7 @@ public class Main {
         Connection mainConnection = DriverManager.getConnection(URL_DB, USER_DB, PASSWORD_DB);
 
         AccountService accountService = new AccountService();
-
+        //TODO убрать доп параметры для GetID
         Servlet user_details = new UserDetailsServlet(mainConnection, "User");
         Servlet user_listFollowers = new UserListFollowers(mainConnection, "User", "followers");
         Servlet user_listFollowing = new UserListFollowers(mainConnection, "User", "following");
@@ -79,6 +77,9 @@ public class Main {
         Servlet user_listPosts = new UserListPostServlet(mainConnection);
         Servlet post_list = new PostListServlet(mainConnection);
         Servlet forum_listPosts = new ForumListPostsServlet(mainConnection);
+        Servlet thread_list = new ThreadListServlet(mainConnection);
+        Servlet forum_listThreads = new ForumListThreadsServlet(mainConnection);
+        Servlet forum_listUsers = new ForumListUsersServlet(mainConnection);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
@@ -112,6 +113,9 @@ public class Main {
         context.addServlet(new ServletHolder(user_listPosts), "/db/api/user/listPosts/");
         context.addServlet(new ServletHolder(post_list), "/db/api/post/list/");
         context.addServlet(new ServletHolder(forum_listPosts), "/db/api/forum/listPosts/");
+        context.addServlet(new ServletHolder(thread_list), "/db/api/thread/list/");
+        context.addServlet(new ServletHolder(forum_listThreads), "/db/api/forum/listThreads/");
+        context.addServlet(new ServletHolder(forum_listUsers), "/db/api/forum/listUsers/");
 
         Server server = new Server(port);
         server.setHandler(context);

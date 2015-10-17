@@ -18,7 +18,7 @@ import java.sql.*;
  * Created by anna on 11.10.15.
  */
 public class UserListFollowers extends HttpServlet {
-
+//TODO добавить опциональные параметры
     private Connection con = null;
     private String field_name = "";
     private String query = "";

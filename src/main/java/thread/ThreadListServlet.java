@@ -1,11 +1,11 @@
-package user;
+package thread;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import post.PostDetailsServlet;
+import user.UserDetailsServlet;
+import user.UserListPostServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -16,20 +16,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashSet;
 
 /**
- * Created by anna on 17.10.15.
+ * Created by anna on 18.10.15.
  */
-public class UserListPostServlet extends HttpServlet {
-
+public class ThreadListServlet extends HttpServlet {
     private Connection con = null;
 
-    public UserListPostServlet(Connection connect) {
+    public ThreadListServlet(Connection connect) {
         con = connect;
     }
-    //TODO перенести эту функцию в PostList
-    public static void PostList(int curr_value, String row_name, HttpServletRequest request, JsonArray list, Connection con, HashSet<String> related) throws IOException, SQLException {
+    public static void ThreadList(int curr_value, String row_name, HttpServletRequest request, JsonArray list, Connection con, HashSet<String> related) throws IOException, SQLException {
 
         String query_since = "";
         String query_order = "desc";
@@ -51,7 +50,7 @@ public class UserListPostServlet extends HttpServlet {
         }
 
 
-        String query_getID = "SELECT id FROM Post where "+row_name+" = ?" + query_since + " order by date "+query_order + query_limit;
+        String query_getID = "SELECT id FROM Thread where "+row_name+" = ?" + query_since + " order by date "+query_order + query_limit;
 
         PreparedStatement stmt = con.prepareStatement(query_getID);
         stmt.setInt(1, curr_value);
@@ -59,7 +58,7 @@ public class UserListPostServlet extends HttpServlet {
 
         while (rs.next()) {
             JsonObject responceJS = new JsonObject();
-            PostDetailsServlet.PostDet(rs.getInt("id"), responceJS, con, related);
+            ThreadDetailsServlet.ThreadDet(rs.getInt("id"), responceJS, con, related);
             list.add(responceJS);
         }
 
@@ -78,7 +77,6 @@ public class UserListPostServlet extends HttpServlet {
         }
 
     }
-
     @Override
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -90,15 +88,33 @@ public class UserListPostServlet extends HttpServlet {
         result.add("response", responseJSON);
 
         JsonArray list = new JsonArray();
+        HashSet<String> related = new HashSet<>();
+        if (request.getParameter("related") != null) {
+            HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
+            related = curr_related;
+        }
+
         try {
-            String curr_author_email = request.getParameter("user");
-            if (curr_author_email == null) throw new NullPointerException();
+            String input_user = null;
+            String curr_forum = request.getParameter("forum");
+            if (curr_forum == null) {
+                input_user = request.getParameter("user");
+                if (input_user == null) {
+                    throw new NullPointerException();
+                }
+                else {
+                    int userID = UserDetailsServlet.GetID(input_user,"email", "User", con);
+                    ThreadList(userID, "userID", request, list, con, related);
+                }
 
-            int curr_authorID = UserDetailsServlet.GetID(curr_author_email, "email", "User", con);
-            if (curr_authorID == -1)
-                throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            }
+            else {
+                int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
+                if (forumID == -1)
+                    throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+                ThreadList(forumID, "forumID", request, list, con, related);
+            }
 
-            PostList(curr_authorID,"authorID", request, list, con, new HashSet<String>());
             result.add("response", list);
 
         } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {

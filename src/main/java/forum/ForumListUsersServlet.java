@@ -1,11 +1,11 @@
-package user;
+package forum;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import post.PostDetailsServlet;
+import thread.ThreadListServlet;
+import user.UserDetailsServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -16,29 +16,29 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashSet;
 
 /**
- * Created by anna on 17.10.15.
+ * Created by anna on 18.10.15.
  */
-public class UserListPostServlet extends HttpServlet {
-
+public class ForumListUsersServlet extends HttpServlet {
     private Connection con = null;
 
-    public UserListPostServlet(Connection connect) {
+    public ForumListUsersServlet(Connection connect) {
         con = connect;
     }
-    //TODO перенести эту функцию в PostList
-    public static void PostList(int curr_value, String row_name, HttpServletRequest request, JsonArray list, Connection con, HashSet<String> related) throws IOException, SQLException {
+    public static void UsersList(int curr_value, HttpServletRequest request, JsonArray list, Connection con) throws IOException, SQLException {
 
         String query_since = "";
         String query_order = "desc";
         String query_limit = "";
 
 
-        String since = request.getParameter("since");
-        if (since != null) {
-            query_since = " and date > '" + since + "'";
+        String since_id = request.getParameter("since_id");
+        if (since_id != null) {
+            //int since = Integer.parseInt(since_id);//TODO проперить валидность
+            query_since = " and authorID >= " + since_id;
         }
         String order = request.getParameter("order");
         if (order != null) {
@@ -47,11 +47,12 @@ public class UserListPostServlet extends HttpServlet {
 
         String limit_input = request.getParameter("limit");
         if (limit_input != null) {
+            //int limit = Integer.parseInt(limit_input);//TODO проперить валидность
             query_limit = " limit " + limit_input;
         }
 
 
-        String query_getID = "SELECT id FROM Post where "+row_name+" = ?" + query_since + " order by date "+query_order + query_limit;
+        String query_getID = "SELECT distinct authorID, name FROM Post LEFT JOIN User ON User.id = Post.authorID WHERE forumID = ?" + query_since + " order by name "+query_order + query_limit;
 
         PreparedStatement stmt = con.prepareStatement(query_getID);
         stmt.setInt(1, curr_value);
@@ -59,7 +60,7 @@ public class UserListPostServlet extends HttpServlet {
 
         while (rs.next()) {
             JsonObject responceJS = new JsonObject();
-            PostDetailsServlet.PostDet(rs.getInt("id"), responceJS, con, related);
+            UserDetailsServlet.UsDet(rs.getInt("authorID"), responceJS, con);
             list.add(responceJS);
         }
 
@@ -90,15 +91,17 @@ public class UserListPostServlet extends HttpServlet {
         result.add("response", responseJSON);
 
         JsonArray list = new JsonArray();
+
+
         try {
-            String curr_author_email = request.getParameter("user");
-            if (curr_author_email == null) throw new NullPointerException();
+            String curr_forum = request.getParameter("forum");
+            if (curr_forum == null) throw new NullPointerException();
 
-            int curr_authorID = UserDetailsServlet.GetID(curr_author_email, "email", "User", con);
-            if (curr_authorID == -1)
+            int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
+            if (forumID == -1)
                 throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            UsersList(forumID, request, list, con);
 
-            PostList(curr_authorID,"authorID", request, list, con, new HashSet<String>());
             result.add("response", list);
 
         } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
