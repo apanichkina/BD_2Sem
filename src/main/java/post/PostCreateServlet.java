@@ -84,6 +84,10 @@ public class PostCreateServlet extends HttpServlet{
             if (new_parentID != null) {
                 parentID = new_parentID.getAsInt();
             }
+            
+
+
+
 
             String query_with_parent = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited,parentID) \n" +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,"+parentID+")";
@@ -98,6 +102,7 @@ public class PostCreateServlet extends HttpServlet{
             stmt.setBoolean(8, isEdited);
             stmt.setBoolean(9, isSpam);
             stmt.setBoolean(10, isDelited);
+
 
 
             if (stmt.executeUpdate() != 1) throw new SQLException();
@@ -118,21 +123,37 @@ public class PostCreateServlet extends HttpServlet{
             responseJSON.addProperty("isSpam", isSpam);
             responseJSON.addProperty("isDeleted", isDelited);
 
-            if (parentID == null) {
-                Formatter id_fmt = new Formatter();
-                id_fmt.format("%07d ", id);
-                path = path + id_fmt;
+
+
+            if (parentID != null) {
+
+                String query_parentPost = "SELECT path as parent_path, count_of_children as pos FROM Post WHERE id = ?";
+                stmt = con.prepareStatement(query_parentPost);
+                stmt.setInt(1, parentID);
+                rs = stmt.executeQuery();
+
+                rs.next();
+                String parent_path = rs.getString("parent_path");
+                int position = rs.getInt("pos");
+
+                Formatter position_fmt = new Formatter();
+                position_fmt.format("%07d", position + 1);
+                path = parent_path + position_fmt;
             }
             else {
                 Formatter id_fmt = new Formatter();
-                id_fmt.format("%07d ", id);
-                Formatter parent_fmt = new Formatter();
-                parent_fmt.format("%07d ", parentID);
-                path = path + parent_fmt + id_fmt;
+                id_fmt.format("%07d", id);
+                path = id_fmt + path;
+
             }
-            System.out.println(path);
 
 
+
+            String query_updatePath = "UPDATE Post SET path = ? WHERE id = ?";
+            stmt = con.prepareStatement(query_updatePath);
+            stmt.setString(1, path);
+            stmt.setInt(2, id);
+            stmt.executeUpdate();
 
 
 

@@ -80,6 +80,7 @@ public class Main {
         Servlet thread_list = new ThreadListServlet(mainConnection);
         Servlet forum_listThreads = new ForumListThreadsServlet(mainConnection);
         Servlet forum_listUsers = new ForumListUsersServlet(mainConnection);
+        Servlet thread_listPosts = new ThreadListPostsServlet(mainConnection);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
@@ -116,6 +117,7 @@ public class Main {
         context.addServlet(new ServletHolder(thread_list), "/db/api/thread/list/");
         context.addServlet(new ServletHolder(forum_listThreads), "/db/api/forum/listThreads/");
         context.addServlet(new ServletHolder(forum_listUsers), "/db/api/forum/listUsers/");
+        context.addServlet(new ServletHolder(thread_listPosts), "/db/api/thread/listPosts/");
 
         Server server = new Server(port);
         server.setHandler(context);
