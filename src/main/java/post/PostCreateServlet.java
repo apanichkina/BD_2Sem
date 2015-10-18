@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.*;
+import java.util.Formatter;
 
 /**
  * Created by anna on 15.10.15.
@@ -56,6 +57,7 @@ public class PostCreateServlet extends HttpServlet{
             Boolean isEdited = false;
             Boolean isSpam = false;
             Boolean isDelited = false;
+            String path = "";
 
 
             JsonElement new_isApproved = json.get("isApproved");
@@ -81,7 +83,6 @@ public class PostCreateServlet extends HttpServlet{
             JsonElement new_parentID = json.get("parent");
             if (new_parentID != null) {
                 parentID = new_parentID.getAsInt();
-                //query = query_with_parent;
             }
 
             String query_with_parent = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited,parentID) \n" +
@@ -103,7 +104,8 @@ public class PostCreateServlet extends HttpServlet{
 
             rs = stmt.getGeneratedKeys();
             rs.next();
-            responseJSON.addProperty("id", rs.getInt(1));
+            int id = rs.getInt(1);
+            responseJSON.addProperty("id", id);
             responseJSON.addProperty("date", date);
             responseJSON.addProperty("thread", threadID);
             responseJSON.addProperty("message", message);
@@ -115,6 +117,22 @@ public class PostCreateServlet extends HttpServlet{
             responseJSON.addProperty("isEdited", isEdited);
             responseJSON.addProperty("isSpam", isSpam);
             responseJSON.addProperty("isDeleted", isDelited);
+
+            if (parentID == null) {
+                Formatter id_fmt = new Formatter();
+                id_fmt.format("%07d ", id);
+                path = path + id_fmt;
+            }
+            else {
+                Formatter id_fmt = new Formatter();
+                id_fmt.format("%07d ", id);
+                Formatter parent_fmt = new Formatter();
+                parent_fmt.format("%07d ", parentID);
+                path = path + parent_fmt + id_fmt;
+            }
+            System.out.println(path);
+
+
 
 
 

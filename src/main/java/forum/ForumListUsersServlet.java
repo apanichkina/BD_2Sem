@@ -47,7 +47,6 @@ public class ForumListUsersServlet extends HttpServlet {
 
         String limit_input = request.getParameter("limit");
         if (limit_input != null) {
-            //int limit = Integer.parseInt(limit_input);//TODO проперить валидность
             query_limit = " limit " + limit_input;
         }
 
