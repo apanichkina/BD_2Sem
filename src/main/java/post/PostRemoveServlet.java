@@ -2,6 +2,7 @@ package post;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -20,7 +21,6 @@ import java.sql.SQLException;
 public class PostRemoveServlet extends HttpServlet {
     private Connection con = null;
     private String query = "";
-
     public PostRemoveServlet(Connection connect,String param) {
         con = connect;
         if (param.equals("remove")) {
@@ -39,37 +39,31 @@ public class PostRemoveServlet extends HttpServlet {
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         Gson gson = new Gson();
         try {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-            int postID = json.get("post").getAsInt();
+            int postID = -1;
+            postID = json.get("post").getAsInt();
+            if (postID < 0) throw new java.lang.NullPointerException();
 
-
-            stmt = con.prepareStatement(query);//TODO повесить триггер на изменение этого поля, чтобы все посты в теме преагировали
+            stmt = con.prepareStatement(query);
             stmt.setInt(1, postID);
 
             if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-
             responseJSON.addProperty("post", postID);
         }
 
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", 2);
-            result.addProperty("response", "err2");
+            APIErrors.ErrorMessager(2, result);
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "err4");
-
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try {
@@ -83,10 +77,7 @@ public class PostRemoveServlet extends HttpServlet {
                 }
             } catch (SQLException se) {}
         }
-
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
-
     }
 }

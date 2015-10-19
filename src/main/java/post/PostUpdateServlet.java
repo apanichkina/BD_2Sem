@@ -2,6 +2,7 @@ package post;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import thread.ThreadDetailsServlet;
 
@@ -21,25 +22,20 @@ import java.util.HashSet;
  */
 public class PostUpdateServlet extends HttpServlet {
     private Connection con = null;
-
-
     public PostUpdateServlet(Connection connect) {
         con = connect;
     }
-
-    public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
-
+    public PreparedStatement stmt = null;
+    public ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
-
-        Gson gson = new Gson();
-
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
+        result.add("response", responseJSON);
+        Gson gson = new Gson();
         try {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String new_message = json.get("message").getAsString();
@@ -49,13 +45,20 @@ public class PostUpdateServlet extends HttpServlet {
             stmt = con.prepareStatement(query_update);
             stmt.setString(1, new_message);
             stmt.setInt(2, curr_id);
-            stmt.executeUpdate();
-
+            if (stmt.executeUpdate() != 1) throw new java.lang.NullPointerException();
             PostDetailsServlet.PostDet(curr_id, responseJSON, con, new HashSet<String>());
-            result.add("response", responseJSON);
 
-
-        } catch (SQLException sqlEx) {
+        } catch (com.google.gson.JsonSyntaxException jsEx) {
+            APIErrors.ErrorMessager(2, result);
+        }
+        catch (java.lang.NullPointerException npEx) {
+            APIErrors.ErrorMessager(3, result);
+        }
+        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            APIErrors.ErrorMessager(3, result);
+        }
+        catch (SQLException sqlEx) {
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try {
@@ -73,7 +76,5 @@ public class PostUpdateServlet extends HttpServlet {
         }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
-
     }
 }

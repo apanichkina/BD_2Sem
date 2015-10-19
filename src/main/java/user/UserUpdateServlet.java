@@ -2,6 +2,7 @@ package user;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -19,13 +20,10 @@ import java.sql.SQLException;
  */
 public class UserUpdateServlet extends HttpServlet {
     private Connection con = null;
-    private String table_name = "";
 
-    public UserUpdateServlet(Connection connect, String table) {
+    public UserUpdateServlet(Connection connect) {
         con = connect;
-        table_name = table;
     }
-
 
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
@@ -35,17 +33,19 @@ public class UserUpdateServlet extends HttpServlet {
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         Gson gson = new Gson();
-        JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-        String new_about = json.get("about").getAsString();
-        String new_name = json.get("name").getAsString();
-        String curr_email = json.get("user").getAsString();
-
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
+
         try {
-            int curr_id = UserDetailsServlet.GetID(curr_email, "email", table_name, con);
+            JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
+            String new_about = json.get("about").getAsString();
+            String new_name = json.get("name").getAsString();
+            String curr_email = json.get("user").getAsString();
+
+            int curr_id = UserDetailsServlet.GetID(curr_email, "email", "User", con);
+            if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
             String query_updateProfile = "UPDATE `User` SET about = ?, `name`= ? WHERE id= ?";
             stmt = con.prepareStatement(query_updateProfile);
             stmt.setString(1, new_about);
@@ -54,13 +54,22 @@ public class UserUpdateServlet extends HttpServlet {
             stmt.executeUpdate();
 
             UserDetailsServlet.UsDet(curr_id,responseJSON, con);
-            result.add("response", responseJSON);
 
 
-        } catch (SQLException sqlEx) {
+        }catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            APIErrors.ErrorMessager(1, result);
+        }
+        catch (com.google.gson.JsonSyntaxException jsEx) {
+            APIErrors.ErrorMessager(2, result);
+        }
+        catch (java.lang.NullPointerException npEx) {
+            APIErrors.ErrorMessager(3,result);
+        }
+        catch (SQLException sqlEx) {
+            APIErrors.ErrorMessager(4,result);
             sqlEx.printStackTrace();
         } finally {
-            //close connection ,stmt and resultset here
+
             try {
                 if (stmt != null) {
                     stmt.close();
@@ -76,7 +85,5 @@ public class UserUpdateServlet extends HttpServlet {
         }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
-
     }
 }

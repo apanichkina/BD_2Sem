@@ -1,6 +1,7 @@
 package forum;
 
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import user.UserDetailsServlet;
@@ -24,14 +25,12 @@ import java.util.HashSet;
 
 public class ForumDetailsServlet extends HttpServlet {
     private Connection con = null;
-    private String table_name = "";
-    public ForumDetailsServlet(Connection connect, String table) {
-        table_name = table;
+    public ForumDetailsServlet(Connection connect) {
         con = connect;
     }
 
-    public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
+    public PreparedStatement stmt = null;
+    public ResultSet rs = null;
 
     public static void ForumDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
 
@@ -71,40 +70,37 @@ public class ForumDetailsServlet extends HttpServlet {
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
+        result.add("response", responseJSON);
+
+        HashSet<String> base_related = new HashSet<>();
+        base_related.add("user");
+
+        HashSet<String> related = new HashSet<>();
+        if (request.getParameter("related") != null) {
+            HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
+            related = curr_related;
+        }
 
         try {
-            HashSet<String> related = new HashSet<>();
-            if (request.getParameter("related") != null) {
-                HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
-                related = curr_related;
-            }
-            HashSet<String> base_related = new HashSet<>();
-            base_related.add("user");
-
             if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
 
             String curr_short_name = request.getParameter("forum");
             if (curr_short_name == null) throw new NullPointerException();
 
-            int curr_id = UserDetailsServlet.GetID(curr_short_name, "short_name", table_name, con);
+            int curr_id = UserDetailsServlet.GetID(curr_short_name, "short_name", "Forum", con);
             if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
-
             ForumDet(curr_id, responseJSON, con, related);
-            result.add("response", responseJSON);
 
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 1);
-            result.addProperty("response", "error1");
+            APIErrors.ErrorMessager(1, result);
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "er3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "error4");
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         }finally {
             try {

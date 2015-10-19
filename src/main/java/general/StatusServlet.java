@@ -1,6 +1,7 @@
 package general;
 
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -53,8 +54,7 @@ public class StatusServlet extends HttpServlet {
 
 
         } catch (SQLException sqlEx) {
-            result.addProperty("code", "4");
-            result.addProperty("response", "err4");
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try{if (stmt != null){
@@ -65,10 +65,7 @@ public class StatusServlet extends HttpServlet {
                 rs.close();
             }
             } catch(SQLException se) {}
-
-
         }
-
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
 

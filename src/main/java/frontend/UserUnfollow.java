@@ -1,5 +1,6 @@
 package frontend;
 
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -24,10 +25,9 @@ public class UserUnfollow extends HttpServlet {
 
     private Connection con = null;
     private String query = "";
-    private String table_name = "";
-    public UserUnfollow(Connection connect, String table, String param) {
+
+    public UserUnfollow(Connection connect, String param) {
         con = connect;
-        table_name = table;
         if (param.equals("follow")) {
             query = "INSERT INTO Follow (followerID,followeeID) VALUES(?,?);";
         }
@@ -43,28 +43,37 @@ public class UserUnfollow extends HttpServlet {
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
 
         Gson gson = new Gson();
-        JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-        String follower = json.get("follower").getAsString();
-        String followee = json.get("followee").getAsString();
-
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
 
         try {
+            JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
+            String follower = json.get("follower").getAsString();
+            String followee = json.get("followee").getAsString();
 
-            //con = DriverManager.getConnection(URL_DB, USER_DB, PASSWORD_DB);
-            int follower_id = UserDetailsServlet.GetID(follower, "email", table_name, con);
-            int followee_id = UserDetailsServlet.GetID(followee, "email", table_name, con);
-
+            int follower_id = UserDetailsServlet.GetID(follower, "email", "User", con);
+            if (follower_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            int followee_id = UserDetailsServlet.GetID(followee, "email", "User", con);
+            if (followee_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
             stmt = con.prepareStatement(query);
             stmt.setInt(1, follower_id);
             stmt.setInt(2, followee_id);
             stmt.executeUpdate();
 
-        } catch (SQLException sqlEx) {
+        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            APIErrors.ErrorMessager(1, result);
+        }
+        catch (com.google.gson.JsonSyntaxException jsEx) {
+            APIErrors.ErrorMessager(2, result);
+        }
+        catch (java.lang.NullPointerException npEx) {
+            APIErrors.ErrorMessager(3,result);
+        }
+        catch (SQLException sqlEx) {
+            APIErrors.ErrorMessager(4,result);
             sqlEx.printStackTrace();
         } finally {
             //close connection ,stmt and resultset here

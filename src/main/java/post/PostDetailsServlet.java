@@ -2,6 +2,7 @@ package post;
 
 import com.google.gson.JsonObject;
 import forum.ForumDetailsServlet;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import thread.ThreadDetailsServlet;
@@ -28,11 +29,10 @@ public class PostDetailsServlet extends HttpServlet{
     public PostDetailsServlet(Connection connect) {
         con = connect;
     }
+    public PreparedStatement stmt = null;
+    public ResultSet rs = null;
 
-    public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
-
-    public static void PostDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws java.lang.NullPointerException, IOException, SQLException {
+    public static void PostDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException, IOException, SQLException {
 
         Boolean allOK= false;
         String query_postDetails = "SELECT Post.* , User.email, Forum.short_name FROM Post \n" +
@@ -43,22 +43,16 @@ public class PostDetailsServlet extends HttpServlet{
         stmt.setInt(1, curr_id);
         ResultSet rs = stmt.executeQuery();
 
-
-
-
-
-
         while (rs.next()) {
             allOK = true;
             responseJSON.addProperty("id", curr_id);
+            responseJSON.addProperty("date", rs.getString("date"));
             if (related.contains("thread")) {
                 JsonObject thread_relatedJSON = new JsonObject();
                 ThreadDetailsServlet.ThreadDet(rs.getInt("threadID"), thread_relatedJSON, con, new HashSet<String>()); //TODO после создания Thread реализовать
                 responseJSON.add("thread",thread_relatedJSON);
             }
             else responseJSON.addProperty("thread", rs.getInt("threadID"));
-            responseJSON.addProperty("date", rs.getString("date"));
-
             if (related.contains("forum")){
                 JsonObject forum_relatedJSON = new JsonObject();
                 ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить как быстрее с join или так
@@ -67,9 +61,11 @@ public class PostDetailsServlet extends HttpServlet{
             else responseJSON.addProperty("forum", rs.getString("short_name"));
 
             responseJSON.addProperty("message", rs.getString("message"));
+
             int parent = rs.getInt("parentID");
             if (parent == 0) responseJSON.addProperty("parent", rs.getString("parentID"));
             else  responseJSON.addProperty("parent", parent);
+
             responseJSON.addProperty("isApproved", rs.getBoolean("isApproved"));
             responseJSON.addProperty("isHighlighted", rs.getBoolean("isHighlighted"));
             responseJSON.addProperty("isEdited", rs.getBoolean("isEdited"));
@@ -86,7 +82,7 @@ public class PostDetailsServlet extends HttpServlet{
             else responseJSON.addProperty("user", rs.getString("email"));
         }
 
-        if (!allOK) throw new java.lang.NullPointerException();
+        if (!allOK) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
         try {
             if (stmt != null) {
@@ -109,33 +105,36 @@ public class PostDetailsServlet extends HttpServlet{
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
 
-        String input_id = request.getParameter("post");
-        int curr_id = Integer.parseInt(input_id);//TODO проперить валидность
-
-        HashSet<String> related = new HashSet<>();
-        if (request.getParameter("related") != null) {
-            HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
-            related = curr_related;
-        }
         HashSet<String> base_related = new HashSet<>();
         base_related.add("user");
         base_related.add("forum");
         base_related.add("thread");
 
-        if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
-
-
         try {
+
+            String input_id = request.getParameter("post");
+            int curr_id = Integer.parseInt(input_id);
+
+
+            HashSet<String> related = new HashSet<>();
+            if (request.getParameter("related") != null) {
+                HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
+                related = curr_related;
+            }
+
+            if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
+
             PostDet(curr_id,responseJSON, con, related);
             result.add("response", responseJSON);
 
-        }catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 1);
-            result.addProperty("response", "err1");
+        }catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            APIErrors.ErrorMessager(1, result);
+        }
+        catch (java.lang.NullPointerException npEx) {
+            APIErrors.ErrorMessager(3, result);
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "err4");
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try {

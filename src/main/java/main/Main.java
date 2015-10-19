@@ -46,21 +46,34 @@ public class Main {
         Connection mainConnection = DriverManager.getConnection(URL_DB, USER_DB, PASSWORD_DB);
 
         AccountService accountService = new AccountService();
-        //TODO убрать доп параметры для GetID
-        Servlet user_details = new UserDetailsServlet(mainConnection, "User");
-        Servlet user_listFollowers = new UserListFollowers(mainConnection, "User", "followers");
-        Servlet user_listFollowing = new UserListFollowers(mainConnection, "User", "following");
-        Servlet user_updateProfile = new UserUpdateServlet(mainConnection, "User");
-        Servlet user_unfollow = new UserUnfollow(mainConnection, "User", "unfollow");
-        Servlet user_follow = new UserUnfollow(mainConnection, "User", "follow");
-        Servlet post_details = new PostDetailsServlet(mainConnection);
-        Servlet forum_details = new ForumDetailsServlet(mainConnection, "Forum");
-        Servlet user_create = new UserCreateServlet(mainConnection);
-        Servlet post_create = new PostCreateServlet(mainConnection);
+
         Servlet status = new StatusServlet(mainConnection);
         Servlet clear = new ClearServlet(mainConnection);
-        Servlet thread_create = new ThreadCreateServlet(mainConnection);
+
+        Servlet user_details = new UserDetailsServlet(mainConnection, "User");
+        Servlet user_listFollowers = new UserListFollowers(mainConnection, "followers");
+        Servlet user_listFollowing = new UserListFollowers(mainConnection, "following");
+        Servlet user_updateProfile = new UserUpdateServlet(mainConnection);
+        Servlet user_unfollow = new UserUnfollow(mainConnection, "unfollow");
+        Servlet user_follow = new UserUnfollow(mainConnection, "follow");
+        Servlet user_create = new UserCreateServlet(mainConnection);
+        Servlet user_listPosts = new UserListPostServlet(mainConnection);
+
+        Servlet post_details = new PostDetailsServlet(mainConnection);
+        Servlet post_create = new PostCreateServlet(mainConnection);
+        Servlet post_remove = new PostRemoveServlet(mainConnection,"remove");
+        Servlet post_restore = new PostRemoveServlet(mainConnection,"restore");
+        Servlet post_update = new PostUpdateServlet(mainConnection);
+        Servlet post_vote = new PostVoteServlet(mainConnection);
+        Servlet post_list = new PostListServlet(mainConnection);
+
         Servlet forum_create = new ForumCreateServlet(mainConnection);
+        Servlet forum_details = new ForumDetailsServlet(mainConnection);
+        Servlet forum_listPosts = new ForumListPostsServlet(mainConnection);
+        Servlet forum_listThreads = new ForumListThreadsServlet(mainConnection);
+        Servlet forum_listUsers = new ForumListUsersServlet(mainConnection);
+
+        Servlet thread_create = new ThreadCreateServlet(mainConnection);
         Servlet thread_subscribe = new ThreadSubscribeServlet(mainConnection, "subscribe");
         Servlet thread_unsubscribe = new ThreadSubscribeServlet(mainConnection, "unsubscribe");
         Servlet thread_open = new ThreadOpenServlet(mainConnection, "open");
@@ -68,18 +81,9 @@ public class Main {
         Servlet thread_remove = new ThreadRemoveServlet(mainConnection);
         Servlet thread_restore = new ThreadRestoreServlet(mainConnection);
         Servlet thread_details = new ThreadDetailsServlet(mainConnection);
-        Servlet post_remove = new PostRemoveServlet(mainConnection,"remove");
-        Servlet post_restore = new PostRemoveServlet(mainConnection,"restore");
         Servlet thread_vote = new ThreadVoteServlet(mainConnection);
         Servlet thread_update = new ThreadUpdateServlet(mainConnection);
-        Servlet post_update = new PostUpdateServlet(mainConnection);
-        Servlet post_vote = new PostVoteServlet(mainConnection);
-        Servlet user_listPosts = new UserListPostServlet(mainConnection);
-        Servlet post_list = new PostListServlet(mainConnection);
-        Servlet forum_listPosts = new ForumListPostsServlet(mainConnection);
         Servlet thread_list = new ThreadListServlet(mainConnection);
-        Servlet forum_listThreads = new ForumListThreadsServlet(mainConnection);
-        Servlet forum_listUsers = new ForumListUsersServlet(mainConnection);
         Servlet thread_listPosts = new ThreadListPostsServlet(mainConnection);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);

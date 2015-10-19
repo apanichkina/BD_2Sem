@@ -1,6 +1,7 @@
 package general;
 
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -39,8 +40,7 @@ public class ClearServlet extends HttpServlet {
             stmt.executeUpdate("SET foreign_key_checks = 1;");
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", "4");
-            result.addProperty("response", "err4");
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try{if (stmt != null){

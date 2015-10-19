@@ -2,6 +2,7 @@ package forum;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -19,14 +20,12 @@ public class ForumCreateServlet extends HttpServlet {
     private Connection con = null;
     private String query = "INSERT INTO Forum (name,short_name,userID) VALUES (?,?,?)";
 
-
-
     public ForumCreateServlet(Connection connect) {
         con = connect;
     }
 
-    public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
+    public PreparedStatement stmt = null;
+    public ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -34,18 +33,14 @@ public class ForumCreateServlet extends HttpServlet {
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         Gson gson = new Gson();
-
-
         try {
-
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String name = json.get("name").getAsString();
             String short_name = json.get("short_name").getAsString();
             String user = json.get("user").getAsString();
             int userID = UserDetailsServlet.GetID(user, "email", "User", con);
-
+            if (userID == -1) throw new java.lang.NullPointerException();
 
             stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, name);
@@ -63,24 +58,16 @@ public class ForumCreateServlet extends HttpServlet {
 
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", 2);
-            result.addProperty("response", "err2");
+            APIErrors.ErrorMessager(2, result);
         }
-
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
-
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "error3");
+            APIErrors.ErrorMessager(3, result);
         }
-
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "err4");
-
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try {

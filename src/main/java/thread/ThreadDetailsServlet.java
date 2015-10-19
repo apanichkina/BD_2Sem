@@ -2,6 +2,7 @@ package thread;
 
 import com.google.gson.JsonObject;
 import forum.ForumDetailsServlet;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import user.UserDetailsServlet;
@@ -23,17 +24,13 @@ import java.util.HashSet;
  */
 public class ThreadDetailsServlet extends HttpServlet {
     private Connection con = null;
-
     public ThreadDetailsServlet(Connection connect) {
         con = connect;
     }
-
-    public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
+    public PreparedStatement stmt = null;
+    public ResultSet rs = null;
 
     public static void ThreadDet(int curr_id, @Nullable JsonObject responseJSON, Connection con, HashSet<String> related) throws IOException, SQLException {
-
-
         String query_threadDetails = "SELECT Thread.* , User.email, Forum.short_name FROM Thread  \n" +
                 "LEFT JOIN User ON User.id=Thread.userID \n" +
                 "LEFT JOIN Forum ON Forum.id=Thread.forumID \n" +
@@ -41,7 +38,6 @@ public class ThreadDetailsServlet extends HttpServlet {
         PreparedStatement stmt = con.prepareStatement(query_threadDetails);
         stmt.setInt(1, curr_id);
         ResultSet rs = stmt.executeQuery();
-
 
         while (rs.next()) {
             responseJSON.addProperty("id", curr_id);
@@ -51,7 +47,6 @@ public class ThreadDetailsServlet extends HttpServlet {
                 ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить как быстрее с join или так
                 responseJSON.add("forum", forum_relatedJSON);
             } else responseJSON.addProperty("forum", rs.getString("short_name"));
-
             responseJSON.addProperty("title", rs.getString("title"));
             responseJSON.addProperty("message", rs.getString("message"));
             responseJSON.addProperty("slug", rs.getString("slug"));
@@ -79,19 +74,13 @@ public class ThreadDetailsServlet extends HttpServlet {
             if (stmt != null) {
                 stmt.close();
             }
-        } catch (SQLException se) {
-        }
+        } catch (SQLException se) {}
         try {
             if (rs != null) {
                 rs.close();
             }
-        } catch (SQLException se) {
-        }
-
-
+        } catch (SQLException se) {}
     }
-
-    ;
 
     @Override
     public void doGet(@NotNull HttpServletRequest request,
@@ -99,6 +88,10 @@ public class ThreadDetailsServlet extends HttpServlet {
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
+
+        HashSet<String> base_related = new HashSet<>();
+        base_related.add("user");
+        base_related.add("forum");
         try {
             String input_id = request.getParameter("thread");
             int curr_id = Integer.parseInt(input_id);//TODO проперить валидность
@@ -108,28 +101,19 @@ public class ThreadDetailsServlet extends HttpServlet {
                 HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
                 related = curr_related;
             }
-            HashSet<String> base_related = new HashSet<>();
-            base_related.add("user");
-            base_related.add("forum");
 
             if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
 
-
             ThreadDet(curr_id, responseJSON, con, related);
             result.add("response", responseJSON);
-
-        } catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", 2);
-            result.addProperty("response", "err2");
+        }
+        catch (com.google.gson.JsonSyntaxException jsEx) {
+            APIErrors.ErrorMessager(2, result);
         } catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         } catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "err4");
-
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
-
         } finally {
             try {
                 if (stmt != null) {

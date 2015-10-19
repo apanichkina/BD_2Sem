@@ -164,16 +164,8 @@ public class UserDetailsServlet extends HttpServlet {
                 rs.close();
             }
             } catch(SQLException se) {}
-
-
         }
-
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
     }
-
-
-
-
 }

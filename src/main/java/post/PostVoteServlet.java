@@ -19,7 +19,6 @@ import java.sql.SQLException;
  */
 public class PostVoteServlet extends HttpServlet {
     private Connection con = null;
-
     public PostVoteServlet(Connection connect) {
         con = connect;
     }
@@ -32,11 +31,12 @@ public class PostVoteServlet extends HttpServlet {
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         Gson gson = new Gson();
         try {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-            int postID = json.get("post").getAsInt();
+            int postID = -1;
+            postID = json.get("post").getAsInt();
+            if (postID < 0) throw new  java.lang.NullPointerException();
             int vote = json.get("vote").getAsInt();
 
             String param = null;
@@ -45,16 +45,9 @@ public class PostVoteServlet extends HttpServlet {
 
             String query = "UPDATE Post SET "+param+"="+param+"+1, points=points+"+vote+" WHERE id=?";
 
-
             stmt = con.prepareStatement(query);
             stmt.setInt(1, postID);
-
-
-            if (stmt.executeUpdate() != 1)  throw new SQLException();
-            //if (isSubscribe) throw new SQLException();
-            //else  throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-
-
+            if (stmt.executeUpdate() != 1)  throw new java.lang.NullPointerException();
         }
 
         catch (com.google.gson.JsonSyntaxException jsEx) {
@@ -86,10 +79,7 @@ public class PostVoteServlet extends HttpServlet {
                 }
             } catch (SQLException se) {}
         }
-
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
-
     }
 }

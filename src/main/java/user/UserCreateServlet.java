@@ -7,6 +7,7 @@ package user;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -20,13 +21,12 @@ import java.sql.*;
 public class UserCreateServlet  extends HttpServlet {
 
     private Connection con = null;
-
     public UserCreateServlet(Connection connect) {
         con = connect;
     }
 
-    public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
+    public PreparedStatement stmt = null;
+    public ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -34,15 +34,17 @@ public class UserCreateServlet  extends HttpServlet {
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         Gson gson = new Gson();
+
+        Boolean anonymous = false;
+        String username = null;
+        String name = null;
+        String about = null;
+        String query = "INSERT INTO User (email, username, about, name, isAnonymous) VALUES(?,?,?,?,?)";
+
         try {
 
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
-            Boolean anonymous = false;
-            String username = null;
-            String name = null;
-            String about = null;
             String email = json.get("email").getAsString();
             JsonElement new_anonymous = json.get("isAnonymous");
             if (new_anonymous != null) {
@@ -53,10 +55,6 @@ public class UserCreateServlet  extends HttpServlet {
                 about = json.get("about").getAsString();
                 name = json.get("name").getAsString();
             }
-
-
-
-            String query = "INSERT INTO User (email, username, about, name, isAnonymous) VALUES(?,?,?,?,?)";
 
             stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, email);
@@ -69,8 +67,6 @@ public class UserCreateServlet  extends HttpServlet {
             rs = stmt.getGeneratedKeys();
             rs.next();
 
-
-
             responseJSON.addProperty("id",rs.getInt(1));
             responseJSON.addProperty("username",username);
             responseJSON.addProperty("name",name);
@@ -79,21 +75,16 @@ public class UserCreateServlet  extends HttpServlet {
 
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", 2);
-            result.addProperty("response", "err2");
+            APIErrors.ErrorMessager(2, result);
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 5);
-            result.addProperty("response", "err5");
+            APIErrors.ErrorMessager(5, result);
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "err4");
-
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try {

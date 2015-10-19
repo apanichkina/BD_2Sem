@@ -2,6 +2,7 @@ package thread;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import post.PostDetailsServlet;
 import user.UserDetailsServlet;
@@ -22,23 +23,18 @@ import java.util.HashSet;
  * Created by anna on 18.10.15.
  */
 public class ThreadListPostsServlet extends HttpServlet {
-
     private Connection con = null;
-
     public ThreadListPostsServlet(Connection connect) {
         con = connect;
     }
-    //TODO перенести эту функцию в PostList
-    public static void ThreadListPosts (int curr_value, HttpServletRequest request, JsonArray list, Connection con, HashSet<String> related) throws IOException, SQLException {
 
+    public static void ThreadListPosts (int curr_value, HttpServletRequest request, JsonArray list, Connection con, HashSet<String> related) throws com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException,IOException, SQLException {
         String query_since = "";
         String query_order = "desc";
         String query_limit = "";
         String query_sort = "";
         int counter = 1;
         int step = 0;
-
-
 
         String since = request.getParameter("since");
         if (since != null) {
@@ -48,7 +44,6 @@ public class ThreadListPostsServlet extends HttpServlet {
         if (order != null) {
             query_order = order;
         }
-
         String limit_input = request.getParameter("limit");
         if (limit_input != null) {
             counter = Integer.parseInt(limit_input);
@@ -63,84 +58,58 @@ public class ThreadListPostsServlet extends HttpServlet {
                     break;
                 }
                 case "parent_tree": {
-
                     query_getID = "SELECT id, parentID FROM Post where threadID = ?" + query_since + " order by first_path "+ query_order +", path ";
                     step = 1;
-
                     break;
                 }
                 default:
                     break;
             }
         }
-
-
         PreparedStatement stmt = con.prepareStatement(query_getID);
         stmt.setInt(1, curr_value);
         ResultSet rs = stmt.executeQuery();
-
-
-
         while (rs.next() && counter > 0) {
             if (order.equals("parent_tree") && rs.getString("parentID") == null) counter = counter - step;
             JsonObject responceJS = new JsonObject();
             PostDetailsServlet.PostDet(rs.getInt("id"), responceJS, con, related);
             list.add(responceJS);
         }
-
-
         try {
             if (stmt != null) {
                 stmt.close();
             }
-        } catch (SQLException se) {
-        }
+        } catch (SQLException se) {}
         try {
             if (rs != null) {
                 rs.close();
             }
-        } catch (SQLException se) {
-        }
-
+        } catch (SQLException se) {}
     }
-
     @Override
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
-
-
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         JsonArray list = new JsonArray();
+        result.add("response", list);
         try {
             String input_threadID = request.getParameter("thread");
             if (input_threadID == null) throw new NullPointerException();
-
             int threadID = Integer.parseInt(input_threadID);
             ThreadListPosts(threadID, request, list, con, new HashSet<String>());
-
-            result.add("response", list);
-
-
-        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 1);
-            result.addProperty("response", "error1");
+        }
+        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            APIErrors.ErrorMessager(1, result);
         } catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "er3");
+            APIErrors.ErrorMessager(3, result);
         } catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "error4");
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
     }
-
-
-
 }

@@ -3,6 +3,7 @@ package post;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -19,15 +20,12 @@ import java.util.Formatter;
  */
 public class PostCreateServlet extends HttpServlet{
     private Connection con = null;
-    private String query = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited) \n" +
-            "VALUES (?,?,?,?,?,?,?,?,?,?)";
-
     public PostCreateServlet(Connection connect) {
         con = connect;
     }
 
-    public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
+    public PreparedStatement stmt = null;
+    public  ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -35,31 +33,27 @@ public class PostCreateServlet extends HttpServlet{
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         Gson gson = new Gson();
-
-
+        Integer parentID = null;
+        Boolean isApproved = false;
+        Boolean isHighlighted = false;
+        Boolean isEdited = false;
+        Boolean isSpam = false;
+        Boolean isDelited = false;
+        int first_path = 0;
+        String path = "";
 
         try {
-
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String date = json.get("date").getAsString();
-
             int threadID = json.get("thread").getAsInt();
             String message = json.get("message").getAsString();
             String user = json.get("user").getAsString();
             int authorID = UserDetailsServlet.GetID(user, "email", "User", con);
+            if(authorID == -1) throw new java.lang.NullPointerException();
             String forum = json.get("forum").getAsString();
             int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
-            Integer parentID = null;
-            Boolean isApproved = false;
-            Boolean isHighlighted = false;
-            Boolean isEdited = false;
-            Boolean isSpam = false;
-            Boolean isDelited = false;
-            int first_path = 0;
-            String path = "";
-
+            if(forumID == -1) throw new java.lang.NullPointerException();
 
             JsonElement new_isApproved = json.get("isApproved");
             if (new_isApproved != null) {
@@ -85,11 +79,6 @@ public class PostCreateServlet extends HttpServlet{
             if (new_parentID != null) {
                 parentID = new_parentID.getAsInt();
             }
-
-
-
-
-
             String query_with_parent = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited,parentID) \n" +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,"+parentID+")";
             stmt = con.prepareStatement(query_with_parent, Statement.RETURN_GENERATED_KEYS);
@@ -103,8 +92,6 @@ public class PostCreateServlet extends HttpServlet{
             stmt.setBoolean(8, isEdited);
             stmt.setBoolean(9, isSpam);
             stmt.setBoolean(10, isDelited);
-
-
 
             if (stmt.executeUpdate() != 1) throw new SQLException();
 
@@ -124,10 +111,7 @@ public class PostCreateServlet extends HttpServlet{
             responseJSON.addProperty("isSpam", isSpam);
             responseJSON.addProperty("isDeleted", isDelited);
 
-
-
             if (parentID != null) {
-
                 String query_parentPost = "SELECT path as parent_path, count_of_children as pos, first_path as parent_firstPath FROM Post WHERE id = ?";
                 stmt = con.prepareStatement(query_parentPost);
                 stmt.setInt(1, parentID);
@@ -145,9 +129,7 @@ public class PostCreateServlet extends HttpServlet{
             }
             else {
                 first_path = id;
-
             }
-
             String query_updatePath = "UPDATE Post SET path = ?, first_path = ? WHERE id = ?";
             stmt = con.prepareStatement(query_updatePath);
             stmt.setString(1, path);
@@ -155,28 +137,19 @@ public class PostCreateServlet extends HttpServlet{
             stmt.setInt(3, id);
             stmt.executeUpdate();
 
-
-
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", 2);
-            result.addProperty("response", "err2");
+            APIErrors.ErrorMessager(2, result);
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
 
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "error3");
+            APIErrors.ErrorMessager(3, result);
         }
-
-
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "err4");
-
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try {

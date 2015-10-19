@@ -2,6 +2,7 @@ package frontend;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -20,14 +21,11 @@ import java.util.*;
  * Created by anna on 11.10.15.
  */
 public class UserListFollowers extends HttpServlet {
-//TODO добавить опциональные параметры
     private Connection con = null;
     private String field_name = "";
     private String query = "";
-    private  String table_name = "";
-    public UserListFollowers(Connection connect, String table, String param) {
+    public UserListFollowers(Connection connect, String param) {
         con = connect;
-        table_name = table;
         if (param.equals("followers")) {
             field_name = "followerID";
             query = "SELECT followerID, email FROM Follow LEFT JOIN User ON Follow.followerID = User.id WHERE followeeID= ?";
@@ -36,9 +34,7 @@ public class UserListFollowers extends HttpServlet {
             field_name = "followeeID";
             query = "SELECT followeeID, email FROM Follow LEFT JOIN User ON Follow.followeeID = User.id WHERE followerID= ?";
         }
-
     }
-
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
     @Override
@@ -48,51 +44,52 @@ public class UserListFollowers extends HttpServlet {
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
+        JsonArray list = new JsonArray();
+        result.add("response", list);
 
-        String curr_email = request.getParameter("user");
+        String query_since = "";
+        String query_order = "desc";
+        String query_limit = "";
+
 
         try {
-            String query_since = "";
-            String query_order = "desc";
-            String query_limit = "";
+            String curr_email = request.getParameter("user");
+            if (curr_email == null) throw new java.lang.NullPointerException();
+            int curr_id = UserDetailsServlet.GetID(curr_email, "email", "User", con);
+            if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
-
-            String since_id = request.getParameter("since_id");
-            if (since_id != null) {
-                //int since = Integer.parseInt(since_id);//TODO проперить валидность
-                query_since = " and "+field_name+" >= " + since_id;
+            String input_since_id = request.getParameter("since_id");
+            if (input_since_id != null) {
+                query_since = " and "+field_name+" >= " + input_since_id;
             }
-            String order = request.getParameter("order");
-            if (order != null) {
-                query_order = order;
+            String input_order = request.getParameter("order");
+            if (input_order != null) {
+                query_order = input_order;
             }
-
-            String limit_input = request.getParameter("limit");
-            if (limit_input != null) {
-                query_limit = " limit " + limit_input;
+            String input_limit = request.getParameter("limit");
+            if (input_limit != null) {
+                query_limit = " limit " + input_limit;
             }
-
-
-
-            int curr_id = UserDetailsServlet.GetID(curr_email, "email", table_name, con);
 
             stmt = con.prepareStatement(query+ query_since + " order by name "+query_order + query_limit);
             stmt.setInt(1, curr_id);
             rs = stmt.executeQuery();
 
-            JsonArray list = new JsonArray();
             while (rs.next()) {
                 JsonObject responceJS = new JsonObject();
                 UserDetailsServlet.UsDet(rs.getInt(field_name), responceJS, con);
                 list.add(responceJS);
-
             }
 
-
-            result.add("response", list);
-
-
-        } catch (SQLException sqlEx) {
+        }
+        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            APIErrors.ErrorMessager(1,result);
+        }
+        catch (java.lang.NullPointerException npEx) {
+            APIErrors.ErrorMessager(3,result);
+        }
+        catch (SQLException sqlEx) {
+            APIErrors.ErrorMessager(4,result);
             sqlEx.printStackTrace();
         } finally {
             try{if (stmt != null){

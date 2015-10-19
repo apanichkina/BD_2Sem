@@ -2,6 +2,7 @@ package thread;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -20,7 +21,6 @@ import java.sql.SQLException;
  */
 public class ThreadVoteServlet extends HttpServlet{
     private Connection con = null;
-
     public ThreadVoteServlet(Connection connect) {
         con = connect;
     }
@@ -33,7 +33,6 @@ public class ThreadVoteServlet extends HttpServlet{
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         Gson gson = new Gson();
         try {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
@@ -45,35 +44,21 @@ public class ThreadVoteServlet extends HttpServlet{
             else param = "dislikes";
 
             String query = "UPDATE Thread SET "+param+"="+param+"+1, points=points+"+vote+" WHERE id=?";
-
-
             stmt = con.prepareStatement(query);
             stmt.setInt(1, threadID);
-
-
-            if (stmt.executeUpdate() != 1)  throw new SQLException();
-                //if (isSubscribe) throw new SQLException();
-                //else  throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-
-
+            if (stmt.executeUpdate() != 1)  throw new java.lang.NullPointerException();
         }
-
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", 2);
-            result.addProperty("response", "err2");
+            APIErrors.ErrorMessager(2, result);
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "err4");
-
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try {
@@ -87,11 +72,7 @@ public class ThreadVoteServlet extends HttpServlet{
                 }
             } catch (SQLException se) {}
         }
-
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
-
     }
-
 }

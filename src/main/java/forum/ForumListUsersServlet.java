@@ -2,6 +2,7 @@ package forum;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 import post.PostDetailsServlet;
 import thread.ThreadListServlet;
@@ -33,27 +34,21 @@ public class ForumListUsersServlet extends HttpServlet {
         String query_since = "";
         String query_order = "desc";
         String query_limit = "";
-
-
         String since_id = request.getParameter("since_id");
         if (since_id != null) {
-            //int since = Integer.parseInt(since_id);//TODO проперить валидность
             query_since = " and authorID >= " + since_id;
         }
         String order = request.getParameter("order");
         if (order != null) {
             query_order = order;
         }
-
         String limit_input = request.getParameter("limit");
         if (limit_input != null) {
             query_limit = " limit " + limit_input;
         }
 
-
-        String query_getID = "SELECT distinct authorID, name FROM Post LEFT JOIN User ON User.id = Post.authorID WHERE forumID = ?" + query_since + " order by name "+query_order + query_limit;
-
-        PreparedStatement stmt = con.prepareStatement(query_getID);
+        String query_getID = "SELECT distinct authorID, name FROM Post LEFT JOIN User ON User.id = Post.authorID WHERE forumID = ?";
+        PreparedStatement stmt = con.prepareStatement(query_getID + query_since + " order by name "+query_order + query_limit);
         stmt.setInt(1, curr_value);
         ResultSet rs = stmt.executeQuery();
 
@@ -62,36 +57,26 @@ public class ForumListUsersServlet extends HttpServlet {
             UserDetailsServlet.UsDet(rs.getInt("authorID"), responceJS, con);
             list.add(responceJS);
         }
-
-
         try {
             if (stmt != null) {
                 stmt.close();
             }
-        } catch (SQLException se) {
-        }
+        } catch (SQLException se) {}
         try {
             if (rs != null) {
                 rs.close();
             }
-        } catch (SQLException se) {
-        }
-
+        } catch (SQLException se) {}
     }
-
     @Override
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
-
-
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         JsonArray list = new JsonArray();
-
-
+        result.add("response", list);
         try {
             String curr_forum = request.getParameter("forum");
             if (curr_forum == null) throw new NullPointerException();
@@ -100,24 +85,16 @@ public class ForumListUsersServlet extends HttpServlet {
             if (forumID == -1)
                 throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
             UsersList(forumID, request, list, con);
-
-            result.add("response", list);
-
-        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 1);
-            result.addProperty("response", "error1");
+        }
+        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            APIErrors.ErrorMessager(1, result);
         } catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "er3");
+            APIErrors.ErrorMessager(3, result);
         } catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "error4");
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
     }
-
-
 }

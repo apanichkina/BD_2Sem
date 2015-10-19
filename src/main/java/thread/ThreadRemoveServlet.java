@@ -2,6 +2,7 @@ package thread;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -19,8 +20,6 @@ import java.sql.SQLException;
  */
 public class ThreadRemoveServlet extends HttpServlet{
     private Connection con = null;
-    private String query_threadDelete = "UPDATE Thread SET isDelited=true WHERE id=?";
-    private String query_postsRemove = "UPDATE Post SET isDelited=true,delete_count=delete_count+1 WHERE threadID=?";
     public ThreadRemoveServlet(Connection connect) {
         con = connect;
     }
@@ -33,42 +32,34 @@ public class ThreadRemoveServlet extends HttpServlet{
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         Gson gson = new Gson();
+
+        String query_threadDelete = "UPDATE Thread SET isDelited=true WHERE id=?";
+        String query_postsRemove = "UPDATE Post SET isDelited=true,delete_count=delete_count+1 WHERE threadID=?";
         try {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             int threadID = json.get("thread").getAsInt();
 
-
-            stmt = con.prepareStatement(query_threadDelete);//TODO повесить триггер на изменение этого поля, чтобы все посты в теме преагировали
+            stmt = con.prepareStatement(query_threadDelete);
             stmt.setInt(1, threadID);
-
-            if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            if (stmt.executeUpdate() != 1) throw new java.lang.NullPointerException();
 
             stmt = con.prepareStatement(query_postsRemove);
             stmt.setInt(1, threadID);
             stmt.executeUpdate();
-
-
             responseJSON.addProperty("thread", threadID);
         }
-
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", 2);
-            result.addProperty("response", "err2");
+            APIErrors.ErrorMessager(2, result);
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "err4");
-
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try {
@@ -82,10 +73,7 @@ public class ThreadRemoveServlet extends HttpServlet{
                 }
             } catch (SQLException se) {}
         }
-
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
-
     }
 }

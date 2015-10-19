@@ -2,7 +2,9 @@ package forum;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import main.APIErrors;
 import org.jetbrains.annotations.NotNull;
+import post.PostListServlet;
 import user.UserDetailsServlet;
 import user.UserListPostServlet;
 
@@ -21,26 +23,21 @@ import java.util.HashSet;
  */
 public class ForumListPostsServlet extends HttpServlet {
     private Connection con = null;
-
     public ForumListPostsServlet(Connection connect) {
         con = connect;
     }
-
     @Override
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
-
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-
         JsonArray list = new JsonArray();
+        result.add("response", list);
         try {
-
             String curr_forum = request.getParameter("forum");
             if (curr_forum == null) throw new NullPointerException();
-
             int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
             if (forumID == -1)
                     throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
@@ -50,27 +47,17 @@ public class ForumListPostsServlet extends HttpServlet {
                 HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
                 related = curr_related;
             }
-
-            UserListPostServlet.PostList(forumID,"forumID", request, list, con, related);
-
-
-            result.add("response", list);
-
-        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 1);
-            result.addProperty("response", "error1");
+            PostListServlet.PostList(forumID, "forumID", request, list, con, related);
+        }
+        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+            APIErrors.ErrorMessager(1, result);
         } catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "er3");
+            APIErrors.ErrorMessager(3, result);
         } catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "error4");
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
     }
-
-
 }
