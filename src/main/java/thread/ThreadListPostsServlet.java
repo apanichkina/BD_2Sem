@@ -35,6 +35,8 @@ public class ThreadListPostsServlet extends HttpServlet {
         String query_order = "desc";
         String query_limit = "";
         String query_sort = "";
+        int counter = 1;
+        int step = 0;
 
 
 
@@ -49,6 +51,7 @@ public class ThreadListPostsServlet extends HttpServlet {
 
         String limit_input = request.getParameter("limit");
         if (limit_input != null) {
+            counter = Integer.parseInt(limit_input);
             query_limit = " limit " + limit_input;
         }
         String query_getID = "SELECT id FROM Post where threadID = ?" + query_since + " order by date " + query_order + query_limit;
@@ -56,11 +59,14 @@ public class ThreadListPostsServlet extends HttpServlet {
         if (sort != null) {
             switch (sort) {
                 case "tree": {
-                    query_getID = "SELECT id FROM Post where threadID = ?" + query_since + " order by path " + query_order + query_limit;
+                    query_getID = "SELECT id FROM Post where threadID = ?" + query_since + " order by first_path "+ query_order +", path "+ query_limit;
                     break;
                 }
                 case "parent_tree": {
-                    query_getID = "";
+
+                    query_getID = "SELECT id, parentID FROM Post where threadID = ?" + query_since + " order by first_path "+ query_order +", path ";
+                    step = 1;
+
                     break;
                 }
                 default:
@@ -69,12 +75,14 @@ public class ThreadListPostsServlet extends HttpServlet {
         }
 
 
-
         PreparedStatement stmt = con.prepareStatement(query_getID);
         stmt.setInt(1, curr_value);
         ResultSet rs = stmt.executeQuery();
 
-        while (rs.next()) {
+
+
+        while (rs.next() && counter > 0) {
+            if (order.equals("parent_tree") && rs.getString("parentID") == null) counter = counter - step;
             JsonObject responceJS = new JsonObject();
             PostDetailsServlet.PostDet(rs.getInt("id"), responceJS, con, related);
             list.add(responceJS);
@@ -117,13 +125,13 @@ public class ThreadListPostsServlet extends HttpServlet {
             result.add("response", list);
 
 
-        } /*catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
             result.addProperty("code", 1);
             result.addProperty("response", "error1");
         } catch (java.lang.NullPointerException npEx) {
             result.addProperty("code", 3);
             result.addProperty("response", "er3");
-        } */catch (SQLException sqlEx) {
+        } catch (SQLException sqlEx) {
             result.addProperty("code", 4);
             result.addProperty("response", "error4");
             sqlEx.printStackTrace();

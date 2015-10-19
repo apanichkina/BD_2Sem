@@ -57,6 +57,7 @@ public class PostCreateServlet extends HttpServlet{
             Boolean isEdited = false;
             Boolean isSpam = false;
             Boolean isDelited = false;
+            int first_path = 0;
             String path = "";
 
 
@@ -84,7 +85,7 @@ public class PostCreateServlet extends HttpServlet{
             if (new_parentID != null) {
                 parentID = new_parentID.getAsInt();
             }
-            
+
 
 
 
@@ -127,7 +128,7 @@ public class PostCreateServlet extends HttpServlet{
 
             if (parentID != null) {
 
-                String query_parentPost = "SELECT path as parent_path, count_of_children as pos FROM Post WHERE id = ?";
+                String query_parentPost = "SELECT path as parent_path, count_of_children as pos, first_path as parent_firstPath FROM Post WHERE id = ?";
                 stmt = con.prepareStatement(query_parentPost);
                 stmt.setInt(1, parentID);
                 rs = stmt.executeQuery();
@@ -135,24 +136,23 @@ public class PostCreateServlet extends HttpServlet{
                 rs.next();
                 String parent_path = rs.getString("parent_path");
                 int position = rs.getInt("pos");
+                int parent_firstPath = rs.getInt("parent_firstPath");
 
                 Formatter position_fmt = new Formatter();
                 position_fmt.format("%07d", position + 1);
                 path = parent_path + position_fmt;
+                first_path = parent_firstPath;
             }
             else {
-                Formatter id_fmt = new Formatter();
-                id_fmt.format("%07d", id);
-                path = id_fmt + path;
+                first_path = id;
 
             }
 
-
-
-            String query_updatePath = "UPDATE Post SET path = ? WHERE id = ?";
+            String query_updatePath = "UPDATE Post SET path = ?, first_path = ? WHERE id = ?";
             stmt = con.prepareStatement(query_updatePath);
             stmt.setString(1, path);
-            stmt.setInt(2, id);
+            stmt.setInt(2, first_path);
+            stmt.setInt(3, id);
             stmt.executeUpdate();
 
 

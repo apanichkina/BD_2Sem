@@ -32,8 +32,9 @@ public class PostDetailsServlet extends HttpServlet{
     public static PreparedStatement stmt = null;
     public static ResultSet rs = null;
 
-    public static void PostDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws IOException, SQLException {
+    public static void PostDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws java.lang.NullPointerException, IOException, SQLException {
 
+        Boolean allOK= false;
         String query_postDetails = "SELECT Post.* , User.email, Forum.short_name FROM Post \n" +
                 "LEFT JOIN User ON User.id=Post.authorID \n" +
                 "LEFT JOIN Forum ON Forum.id=Post.forumID\n" +
@@ -43,7 +44,12 @@ public class PostDetailsServlet extends HttpServlet{
         ResultSet rs = stmt.executeQuery();
 
 
+
+
+
+
         while (rs.next()) {
+            allOK = true;
             responseJSON.addProperty("id", curr_id);
             if (related.contains("thread")) {
                 JsonObject thread_relatedJSON = new JsonObject();
@@ -79,6 +85,9 @@ public class PostDetailsServlet extends HttpServlet{
             }
             else responseJSON.addProperty("user", rs.getString("email"));
         }
+
+        if (!allOK) throw new java.lang.NullPointerException();
+
         try {
             if (stmt != null) {
                 stmt.close();
@@ -107,15 +116,26 @@ public class PostDetailsServlet extends HttpServlet{
         if (request.getParameter("related") != null) {
             HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
             related = curr_related;
-
         }
+        HashSet<String> base_related = new HashSet<>();
+        base_related.add("user");
+        base_related.add("forum");
+        base_related.add("thread");
+
+        if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
 
 
         try {
             PostDet(curr_id,responseJSON, con, related);
             result.add("response", responseJSON);
 
-        } catch (SQLException sqlEx) {
+        }catch (java.lang.NullPointerException npEx) {
+            result.addProperty("code", 1);
+            result.addProperty("response", "err1");
+        }
+        catch (SQLException sqlEx) {
+            result.addProperty("code", 4);
+            result.addProperty("response", "err4");
             sqlEx.printStackTrace();
         } finally {
             try {

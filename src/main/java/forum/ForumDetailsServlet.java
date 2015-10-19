@@ -77,8 +77,11 @@ public class ForumDetailsServlet extends HttpServlet {
             if (request.getParameter("related") != null) {
                 HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
                 related = curr_related;
-
             }
+            HashSet<String> base_related = new HashSet<>();
+            base_related.add("user");
+
+            if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
 
             String curr_short_name = request.getParameter("forum");
             if (curr_short_name == null) throw new NullPointerException();
