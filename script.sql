@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `forumdb` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `forumdb`;
 -- MySQL dump 10.13  Distrib 5.6.24, for osx10.8 (x86_64)
 --
 -- Host: localhost    Database: forumdb
@@ -235,4 +237,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-10-20 18:15:43
+-- Dump completed on 2015-10-20 18:27:57
