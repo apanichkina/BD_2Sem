@@ -11,6 +11,8 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import javax.servlet.Servlet;
+import javax.sql.DataSource;
+
 import frontend.*;
 import org.jetbrains.annotations.NotNull;
 import post.*;
@@ -23,13 +25,12 @@ import user.UserUpdateServlet;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
+
 public class Main {
 
-
+    public static DBPool connectionPool;
+    public static DataSource mainConnection;
     public static final int  STANDARTPORT = 8080;
-    public static final String URL_DB = "jdbc:mysql://localhost:3306/forumdb?autoreconnect=true&useUnicode=yes&characterEncoding=UTF-8";
-    public static final String USER_DB = "root";
-    public static final String PASSWORD_DB = "12345";
 
     @SuppressWarnings("OverlyBroadThrowsClause")
     public static void main(@NotNull String[] args) throws Exception {
@@ -43,48 +44,49 @@ public class Main {
             }
         }
 
-        Connection mainConnection = DriverManager.getConnection(URL_DB, USER_DB, PASSWORD_DB);
+        connectionPool = new DBPool();
+        mainConnection = connectionPool.createSource();
 
         AccountService accountService = new AccountService();
 
-        Servlet status = new StatusServlet(mainConnection);
-        Servlet clear = new ClearServlet(mainConnection);
+        Servlet status = new StatusServlet(mainConnection.getConnection());
+        Servlet clear = new ClearServlet(mainConnection.getConnection());
 
-        Servlet user_details = new UserDetailsServlet(mainConnection, "User");
-        Servlet user_listFollowers = new UserListFollowers(mainConnection, "followers");
-        Servlet user_listFollowing = new UserListFollowers(mainConnection, "following");
-        Servlet user_updateProfile = new UserUpdateServlet(mainConnection);
-        Servlet user_unfollow = new UserUnfollow(mainConnection, "unfollow");
-        Servlet user_follow = new UserUnfollow(mainConnection, "follow");
-        Servlet user_create = new UserCreateServlet(mainConnection);
-        Servlet user_listPosts = new UserListPostServlet(mainConnection);
+        Servlet user_details = new UserDetailsServlet(mainConnection.getConnection(), "User");
+        Servlet user_listFollowers = new UserListFollowers(mainConnection.getConnection(), "followers");
+        Servlet user_listFollowing = new UserListFollowers(mainConnection.getConnection(), "following");
+        Servlet user_updateProfile = new UserUpdateServlet(mainConnection.getConnection());
+        Servlet user_unfollow = new UserUnfollow(mainConnection.getConnection(), "unfollow");
+        Servlet user_follow = new UserUnfollow(mainConnection.getConnection(), "follow");
+        Servlet user_create = new UserCreateServlet();
+        Servlet user_listPosts = new UserListPostServlet(mainConnection.getConnection());
 
-        Servlet post_details = new PostDetailsServlet(mainConnection);
-        Servlet post_create = new PostCreateServlet(mainConnection);
-        Servlet post_remove = new PostRemoveServlet(mainConnection,"remove");
-        Servlet post_restore = new PostRemoveServlet(mainConnection,"restore");
-        Servlet post_update = new PostUpdateServlet(mainConnection);
-        Servlet post_vote = new PostVoteServlet(mainConnection);
-        Servlet post_list = new PostListServlet(mainConnection);
+        Servlet post_details = new PostDetailsServlet(mainConnection.getConnection());
+        Servlet post_create = new PostCreateServlet();
+        Servlet post_remove = new PostRemoveServlet(mainConnection.getConnection(),"remove");
+        Servlet post_restore = new PostRemoveServlet(mainConnection.getConnection(),"restore");
+        Servlet post_update = new PostUpdateServlet(mainConnection.getConnection());
+        Servlet post_vote = new PostVoteServlet(mainConnection.getConnection());
+        Servlet post_list = new PostListServlet(mainConnection.getConnection());
 
-        Servlet forum_create = new ForumCreateServlet(mainConnection);
-        Servlet forum_details = new ForumDetailsServlet(mainConnection);
-        Servlet forum_listPosts = new ForumListPostsServlet(mainConnection);
-        Servlet forum_listThreads = new ForumListThreadsServlet(mainConnection);
-        Servlet forum_listUsers = new ForumListUsersServlet(mainConnection);
+        Servlet forum_create = new ForumCreateServlet();
+        Servlet forum_details = new ForumDetailsServlet(mainConnection.getConnection());
+        Servlet forum_listPosts = new ForumListPostsServlet(mainConnection.getConnection());
+        Servlet forum_listThreads = new ForumListThreadsServlet(mainConnection.getConnection());
+        Servlet forum_listUsers = new ForumListUsersServlet(mainConnection.getConnection());
 
-        Servlet thread_create = new ThreadCreateServlet(mainConnection);
-        Servlet thread_subscribe = new ThreadSubscribeServlet(mainConnection, "subscribe");
-        Servlet thread_unsubscribe = new ThreadSubscribeServlet(mainConnection, "unsubscribe");
-        Servlet thread_open = new ThreadOpenServlet(mainConnection, "open");
-        Servlet thread_close = new ThreadOpenServlet(mainConnection, "close");
-        Servlet thread_remove = new ThreadRemoveServlet(mainConnection);
-        Servlet thread_restore = new ThreadRestoreServlet(mainConnection);
-        Servlet thread_details = new ThreadDetailsServlet(mainConnection);
-        Servlet thread_vote = new ThreadVoteServlet(mainConnection);
-        Servlet thread_update = new ThreadUpdateServlet(mainConnection);
-        Servlet thread_list = new ThreadListServlet(mainConnection);
-        Servlet thread_listPosts = new ThreadListPostsServlet(mainConnection);
+        Servlet thread_create = new ThreadCreateServlet();
+        Servlet thread_subscribe = new ThreadSubscribeServlet(mainConnection.getConnection(), "subscribe");
+        Servlet thread_unsubscribe = new ThreadSubscribeServlet(mainConnection.getConnection(), "unsubscribe");
+        Servlet thread_open = new ThreadOpenServlet(mainConnection.getConnection(), "open");
+        Servlet thread_close = new ThreadOpenServlet(mainConnection.getConnection(), "close");
+        Servlet thread_remove = new ThreadRemoveServlet(mainConnection.getConnection());
+        Servlet thread_restore = new ThreadRestoreServlet(mainConnection.getConnection());
+        Servlet thread_details = new ThreadDetailsServlet(mainConnection.getConnection());
+        Servlet thread_vote = new ThreadVoteServlet(mainConnection.getConnection());
+        Servlet thread_update = new ThreadUpdateServlet(mainConnection.getConnection());
+        Servlet thread_list = new ThreadListServlet(mainConnection.getConnection());
+        Servlet thread_listPosts = new ThreadListPostsServlet(mainConnection.getConnection());
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
@@ -125,6 +127,7 @@ public class Main {
 
         Server server = new Server(port);
         server.setHandler(context);
+
 
 
 

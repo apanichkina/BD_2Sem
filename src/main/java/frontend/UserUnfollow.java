@@ -36,8 +36,6 @@ public class UserUnfollow extends HttpServlet {
         }
     }
 
-    public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -48,7 +46,7 @@ public class UserUnfollow extends HttpServlet {
         result.addProperty("code", 0);
         result.add("response", responseJSON);
 
-        try {
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String follower = json.get("follower").getAsString();
             String followee = json.get("followee").getAsString();
@@ -58,7 +56,7 @@ public class UserUnfollow extends HttpServlet {
             int followee_id = UserDetailsServlet.GetID(followee, "email", "User", con);
             if (followee_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
-            stmt = con.prepareStatement(query);
+            //stmt = con.prepareStatement(query);
             stmt.setInt(1, follower_id);
             stmt.setInt(2, followee_id);
             stmt.executeUpdate();
@@ -78,16 +76,16 @@ public class UserUnfollow extends HttpServlet {
         } finally {
             //close connection ,stmt and resultset here
             //try {if (con != null) {con.close();}} catch (SQLException se) { /*can't do anything */ }
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException se) {}
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException se) {}
+//            try {
+//                if (stmt != null) {
+//                    stmt.close();
+//                }
+//            } catch (SQLException se) {}
+//            try {
+//                if (rs != null) {
+//                    rs.close();
+//                }
+//            } catch (SQLException se) {}
         }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);

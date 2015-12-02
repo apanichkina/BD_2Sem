@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -19,13 +20,14 @@ import java.util.Formatter;
  * Created by anna on 15.10.15.
  */
 public class PostCreateServlet extends HttpServlet{
-    private Connection con = null;
-    public PostCreateServlet(Connection connect) {
-        con = connect;
-    }
+ //   private Connection con = null;
+//    public PostCreateServlet(Connection connect) {
+//        con = connect;
+//    }
+ public PostCreateServlet() {}
 
-    public PreparedStatement stmt = null;
-    public  ResultSet rs = null;
+//    public PreparedStatement stmt = null;
+//    public  ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -43,7 +45,7 @@ public class PostCreateServlet extends HttpServlet{
         int first_path = 0;
         String path = "";
 
-        try {
+        try (Connection con = Main.mainConnection.getConnection()) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String date = json.get("date").getAsString();
             int threadID = json.get("thread").getAsInt();
@@ -76,12 +78,12 @@ public class PostCreateServlet extends HttpServlet{
                 isDelited = new_isDelited.getAsBoolean();
             }
             JsonElement new_parentID = json.get("parent");
-            if (new_parentID != null) {
+            if (new_parentID!=null && !new_parentID.isJsonNull()) {
                 parentID = new_parentID.getAsInt();
             }
             String query_with_parent = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited,parentID) \n" +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,"+parentID+")";
-            stmt = con.prepareStatement(query_with_parent, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement stmt = con.prepareStatement(query_with_parent, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, date);
             stmt.setInt(2, threadID);
             stmt.setString(3, message);
@@ -95,7 +97,7 @@ public class PostCreateServlet extends HttpServlet{
 
             if (stmt.executeUpdate() != 1) throw new SQLException();
 
-            rs = stmt.getGeneratedKeys();
+            ResultSet rs = stmt.getGeneratedKeys();
             rs.next();
             int id = rs.getInt(1);
             responseJSON.addProperty("id", id);
@@ -151,18 +153,19 @@ public class PostCreateServlet extends HttpServlet{
         catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException se) {}
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException se) {}
         }
+//        finally {
+//            try {
+//                if (stmt != null) {
+//                    stmt.close();
+//                }
+//            } catch (SQLException se) {}
+//            try {
+//                if (rs != null) {
+//                    rs.close();
+//                }
+//            } catch (SQLException se) {}
+//        }
 
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);

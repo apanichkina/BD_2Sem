@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -18,13 +19,13 @@ import java.sql.*;
  * Created by anna on 15.10.15.
  */
 public class ThreadCreateServlet extends HttpServlet {
-    private Connection con = null;
-    public ThreadCreateServlet(Connection connect) {
-        con = connect;
-    }
-
-    public PreparedStatement stmt = null;
-    public ResultSet rs = null;
+    //private Connection con = null;
+    //public ThreadCreateServlet(Connection connect) {
+    //    con = connect;
+    //}
+    public ThreadCreateServlet(){}
+    //public PreparedStatement stmt = null;
+    //public ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -36,7 +37,7 @@ public class ThreadCreateServlet extends HttpServlet {
         Gson gson = new Gson();
         String query = "INSERT INTO Thread (forumID,title,userID,date,message,slug,isClosed,isDelited) VALUES (?,?,?,?,?,?,?,?)";
 
-        try {
+        try (Connection con = Main.mainConnection.getConnection()) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String forum = json.get("forum").getAsString();
             int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
@@ -57,7 +58,7 @@ public class ThreadCreateServlet extends HttpServlet {
                 isDelited = new_isDelited.getAsBoolean();
             }
 
-            stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             stmt.setInt(1, forumID);
             stmt.setString(2, title);
             stmt.setInt(3, userID);
@@ -70,7 +71,7 @@ public class ThreadCreateServlet extends HttpServlet {
 
             if (stmt.executeUpdate() != 1) throw new SQLException();
 
-            rs = stmt.getGeneratedKeys();
+            ResultSet rs = stmt.getGeneratedKeys();
             rs.next();
             responseJSON.addProperty("id", rs.getInt(1));
             responseJSON.addProperty("forum", forum);
@@ -96,18 +97,19 @@ public class ThreadCreateServlet extends HttpServlet {
         catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException se) {}
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException se) {}
         }
+//        finally {
+//            try {
+//                if (stmt != null) {
+//                    stmt.close();
+//                }
+//            } catch (SQLException se) {}
+//            try {
+//                if (rs != null) {
+//                    rs.close();
+//                }
+//            } catch (SQLException se) {}
+//        }
 
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
