@@ -69,19 +69,21 @@ public class ThreadCreateServlet extends HttpServlet {
             stmt.setBoolean(8, isDelited);
 
 
-            if (stmt.executeUpdate() != 1) throw new SQLException();
-
-            ResultSet rs = stmt.getGeneratedKeys();
-            rs.next();
-            responseJSON.addProperty("id", rs.getInt(1));
-            responseJSON.addProperty("forum", forum);
-            responseJSON.addProperty("title", title);
-            responseJSON.addProperty("isClosed", isClosed);
-            responseJSON.addProperty("user", user);
-            responseJSON.addProperty("date", date);
-            responseJSON.addProperty("message", message);
-            responseJSON.addProperty("slug", slug);
-            responseJSON.addProperty("isDeleted", isDelited);
+            //if (stmt.executeUpdate() != 1) throw new SQLException();
+            if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(4, result);
+            else {
+                ResultSet rs = stmt.getGeneratedKeys();
+                rs.next();
+                responseJSON.addProperty("id", rs.getInt(1));
+                responseJSON.addProperty("forum", forum);
+                responseJSON.addProperty("title", title);
+                responseJSON.addProperty("isClosed", isClosed);
+                responseJSON.addProperty("user", user);
+                responseJSON.addProperty("date", date);
+                responseJSON.addProperty("message", message);
+                responseJSON.addProperty("slug", slug);
+                responseJSON.addProperty("isDeleted", isDelited);
+            }
 
 
         }

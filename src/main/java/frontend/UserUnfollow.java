@@ -1,6 +1,7 @@
 package frontend;
 
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -23,11 +24,9 @@ import user.UserDetailsServlet;
  */
 public class UserUnfollow extends HttpServlet {
 
-    private Connection con = null;
     private String query = "";
 
-    public UserUnfollow(Connection connect, String param) {
-        con = connect;
+    public UserUnfollow(String param) {
         if (param.equals("follow")) {
             query = "INSERT INTO Follow (followerID,followeeID) VALUES(?,?);";
         }
@@ -46,7 +45,7 @@ public class UserUnfollow extends HttpServlet {
         result.addProperty("code", 0);
         result.add("response", responseJSON);
 
-        try (PreparedStatement stmt = con.prepareStatement(query)) {
+        try (Connection con = Main.mainConnection.getConnection();PreparedStatement stmt = con.prepareStatement(query)) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String follower = json.get("follower").getAsString();
             String followee = json.get("followee").getAsString();

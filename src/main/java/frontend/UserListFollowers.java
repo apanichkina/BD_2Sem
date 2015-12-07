@@ -3,6 +3,7 @@ package frontend;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -21,11 +22,11 @@ import java.util.*;
  * Created by anna on 11.10.15.
  */
 public class UserListFollowers extends HttpServlet {
-    private Connection con = null;
+
     private String field_name = "";
     private String query = "";
-    public UserListFollowers(Connection connect, String param) {
-        con = connect;
+    public UserListFollowers(String param) {
+
         if (param.equals("followers")) {
             field_name = "followerID";
             query = "SELECT followerID, email FROM Follow LEFT JOIN User ON Follow.followerID = User.id WHERE followeeID= ?";
@@ -36,7 +37,7 @@ public class UserListFollowers extends HttpServlet {
         }
     }
     public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
+
     @Override
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -50,9 +51,11 @@ public class UserListFollowers extends HttpServlet {
         String query_since = "";
         String query_order = "desc";
         String query_limit = "";
+        ResultSet rs = null;
 
 
-        try {
+        try(Connection con = Main.mainConnection.getConnection();) {
+
             String curr_email = request.getParameter("user");
             if (curr_email == null) throw new java.lang.NullPointerException();
             int curr_id = UserDetailsServlet.GetID(curr_email, "email", "User", con);

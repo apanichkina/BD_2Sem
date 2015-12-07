@@ -3,6 +3,7 @@ package post;
 import com.google.gson.JsonObject;
 import forum.ForumDetailsServlet;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import thread.ThreadDetailsServlet;
@@ -24,11 +25,7 @@ import java.util.HashSet;
  * Created by anna on 15.10.15.
  */
 public class PostDetailsServlet extends HttpServlet{
-    private Connection con = null;
 
-    public PostDetailsServlet(Connection connect) {
-        con = connect;
-    }
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
 
@@ -110,7 +107,7 @@ public class PostDetailsServlet extends HttpServlet{
         base_related.add("forum");
         base_related.add("thread");
 
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
 
             String input_id = request.getParameter("post");
             int curr_id = Integer.parseInt(input_id);

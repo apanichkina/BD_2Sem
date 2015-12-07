@@ -3,6 +3,7 @@ package forum;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import post.PostListServlet;
 import user.UserDetailsServlet;
@@ -22,9 +23,9 @@ import java.util.HashSet;
  * Created by anna on 17.10.15.
  */
 public class ForumListPostsServlet extends HttpServlet {
-    private Connection con = null;
-    public ForumListPostsServlet(Connection connect) {
-        con = connect;
+
+    public ForumListPostsServlet() {
+
     }
     @Override
     public void doGet(@NotNull HttpServletRequest request,
@@ -35,7 +36,7 @@ public class ForumListPostsServlet extends HttpServlet {
         result.add("response", responseJSON);
         JsonArray list = new JsonArray();
         result.add("response", list);
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             String curr_forum = request.getParameter("forum");
             if (curr_forum == null) throw new NullPointerException();
             int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);

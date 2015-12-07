@@ -20,13 +20,7 @@ import java.sql.*;
 
 
 public class UserCreateServlet  extends HttpServlet {
-
-    private Connection con = null;
     public UserCreateServlet(){};
-    public UserCreateServlet(Connection connect) {
-        con = connect;
-    }
-
     //public PreparedStatement stmt = null;
     //public ResultSet rs = null;
     @Override
@@ -67,10 +61,11 @@ public class UserCreateServlet  extends HttpServlet {
 //                throw new SQLException();
             stmt.executeUpdate();
             int curr_id = UserDetailsServlet.GetID(email, "email", "User", con);
-            if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-
-            UserDetailsServlet.UsDet(curr_id, responseJSON, con);
-
+           // if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            if (curr_id == -1)  APIErrors.ErrorMessager(5, result);
+            else {
+                UserDetailsServlet.UsDet(curr_id, responseJSON, con);
+            }
 
             /*
             rs = stmt.getGeneratedKeys();
@@ -84,21 +79,20 @@ public class UserCreateServlet  extends HttpServlet {
            */
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            jsEx.printStackTrace();
+            //jsEx.printStackTrace();
             APIErrors.ErrorMessager(2, result);
         }
         catch (java.lang.NullPointerException npEx) {
-            npEx.printStackTrace();
+           // npEx.printStackTrace();
             APIErrors.ErrorMessager(3, result);
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            icvEx.printStackTrace();
+            //icvEx.printStackTrace();
             APIErrors.ErrorMessager(5, result);
         }
         catch (SQLException sqlEx) {
-            sqlEx.printStackTrace();
+           // sqlEx.printStackTrace();
             APIErrors.ErrorMessager(4, result);
-         //   sqlEx.printStackTrace();
         }
 //        finally {
 //

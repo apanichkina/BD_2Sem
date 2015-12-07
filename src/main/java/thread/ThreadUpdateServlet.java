@@ -3,6 +3,7 @@ package thread;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -21,10 +22,8 @@ import java.util.HashSet;
  * Created by anna on 17.10.15.
  */
 public class ThreadUpdateServlet extends HttpServlet{
-    private Connection con = null;
-    public ThreadUpdateServlet(Connection connect) {
-        con = connect;
-    }
+
+    public ThreadUpdateServlet() {}
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
     @Override
@@ -35,7 +34,7 @@ public class ThreadUpdateServlet extends HttpServlet{
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String new_message = json.get("message").getAsString();
             String new_slug = json.get("slug").getAsString();
@@ -46,10 +45,10 @@ public class ThreadUpdateServlet extends HttpServlet{
             stmt.setString(1, new_message);
             stmt.setString(2, new_slug);
             stmt.setInt(3, curr_id);
-            if (stmt.executeUpdate() != 1) throw new java.lang.NullPointerException();
+            //if (stmt.executeUpdate() != 1) throw new java.lang.NullPointerException();
+            if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(3, result);
+            else ThreadDetailsServlet.ThreadDet(curr_id, responseJSON,con,new HashSet<String>());
 
-            ThreadDetailsServlet.ThreadDet(curr_id,responseJSON,con,new HashSet<String>());
-            result.add("response", responseJSON);
         } catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);
         }

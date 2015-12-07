@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import post.PostDetailsServlet;
@@ -24,9 +25,8 @@ import java.util.HashSet;
  * Created by anna on 17.10.15.
  */
 public class UserListPostServlet extends HttpServlet {
-    private Connection con = null;
-    public UserListPostServlet(Connection connect) {
-        con = connect;
+    public UserListPostServlet() {
+
     }
     @Override
     public void doGet(@NotNull HttpServletRequest request,
@@ -37,14 +37,16 @@ public class UserListPostServlet extends HttpServlet {
         result.add("response", responseJSON);
         JsonArray list = new JsonArray();
         result.add("response", list);
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             String curr_author_email = request.getParameter("user");
-            if (curr_author_email == null) throw new NullPointerException();
-            int curr_authorID = UserDetailsServlet.GetID(curr_author_email, "email", "User", con);
-            if (curr_authorID == -1)
-                throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-
-            PostListServlet.PostList(curr_authorID, "authorID", request, list, con, new HashSet<String>());
+            //if (curr_author_email == null) throw new NullPointerException();
+            if (curr_author_email == null) APIErrors.ErrorMessager(3,result);
+            else {
+                int curr_authorID = UserDetailsServlet.GetID(curr_author_email, "email", "User", con);
+                //if (curr_authorID == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+                if (curr_authorID == -1) APIErrors.ErrorMessager(1, result);
+                else PostListServlet.PostList(curr_authorID, "authorID", request, list, con, new HashSet<String>());
+            }
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
             APIErrors.ErrorMessager(1,result);

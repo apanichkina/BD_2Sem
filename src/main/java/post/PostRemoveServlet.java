@@ -3,6 +3,7 @@ package post;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -19,10 +20,8 @@ import java.sql.SQLException;
  * Created by anna on 16.10.15.
  */
 public class PostRemoveServlet extends HttpServlet {
-    private Connection con = null;
     private String query = "";
-    public PostRemoveServlet(Connection connect,String param) {
-        con = connect;
+    public PostRemoveServlet(String param) {
         if (param.equals("remove")) {
             query = "UPDATE Post SET isDelited=true, delete_count=delete_count+1 WHERE id=?";
         }
@@ -40,17 +39,20 @@ public class PostRemoveServlet extends HttpServlet {
         result.addProperty("code", 0);
         result.add("response", responseJSON);
         Gson gson = new Gson();
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             int postID = -1;
             postID = json.get("post").getAsInt();
-            if (postID < 0) throw new java.lang.NullPointerException();
+            //if (postID < 0) throw new java.lang.NullPointerException();
+            if (postID < 0) APIErrors.ErrorMessager(3, result);
+            else {
+                stmt = con.prepareStatement(query);
+                stmt.setInt(1, postID);
 
-            stmt = con.prepareStatement(query);
-            stmt.setInt(1, postID);
-
-            if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-            responseJSON.addProperty("post", postID);
+                //if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+                if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(3, result);
+                else responseJSON.addProperty("post", postID);
+            }
         }
 
         catch (com.google.gson.JsonSyntaxException jsEx) {

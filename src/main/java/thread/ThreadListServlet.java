@@ -3,6 +3,7 @@ package thread;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import post.PostDetailsServlet;
 import user.UserDetailsServlet;
@@ -24,9 +25,9 @@ import java.util.HashSet;
  * Created by anna on 18.10.15.
  */
 public class ThreadListServlet extends HttpServlet {
-    private Connection con = null;
-    public ThreadListServlet(Connection connect) {
-        con = connect;
+
+    public ThreadListServlet() {
+
     }
 
     public static void ThreadList(int curr_value, String row_name, HttpServletRequest request, JsonArray list, Connection con, HashSet<String> related) throws IOException, SQLException {
@@ -82,12 +83,13 @@ public class ThreadListServlet extends HttpServlet {
             related = curr_related;
         }
         String input_user = null;
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             String curr_forum = request.getParameter("forum");
             if (curr_forum == null) {
                 input_user = request.getParameter("user");
                 if (input_user == null) {
-                    throw new NullPointerException();
+                    //throw new NullPointerException();
+                    APIErrors.ErrorMessager(3, result);//TODO это вообще нужно проверять?
                 }
                 else {
                     int userID = UserDetailsServlet.GetID(input_user,"email", "User", con);
@@ -96,9 +98,9 @@ public class ThreadListServlet extends HttpServlet {
             }
             else {
                 int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
-                if (forumID == -1)
-                    throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-                ThreadList(forumID, "forumID", request, list, con, related);
+               // if (forumID == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+                if (forumID == -1) APIErrors.ErrorMessager(1, result);
+                else ThreadList(forumID, "forumID", request, list, con, related);
             }
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {

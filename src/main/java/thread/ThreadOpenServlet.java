@@ -3,6 +3,7 @@ package thread;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -20,11 +21,10 @@ import java.sql.SQLException;
  * Created by anna on 16.10.15.
  */
 public class ThreadOpenServlet extends HttpServlet{
-    private Connection con = null;
     private String query = "";
 
-    public ThreadOpenServlet(Connection connect,String param) {
-        con = connect;
+    public ThreadOpenServlet(String param) {
+
         if (param.equals("open")) {
             query = "UPDATE Thread SET isClosed=false WHERE id=?";
         }
@@ -42,17 +42,19 @@ public class ThreadOpenServlet extends HttpServlet{
         result.addProperty("code", 0);
         result.add("response", responseJSON);
         Gson gson = new Gson();
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             int threadID = -1;
             threadID = json.get("thread").getAsInt();
-            if (threadID < 0) throw new java.lang.NullPointerException(); //не удалосьполучить значение
-
-            stmt = con.prepareStatement(query);
-            stmt.setInt(1, threadID);
-            if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-
-            responseJSON.addProperty("thread", threadID);
+            //if (threadID < 0) throw new java.lang.NullPointerException(); //не удалосьполучить значение
+            if (threadID < 0) APIErrors.ErrorMessager(3, result);
+            else {
+                stmt = con.prepareStatement(query);
+                stmt.setInt(1, threadID);
+                //if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+                if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(1, result);
+                else responseJSON.addProperty("thread", threadID);
+            }
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);

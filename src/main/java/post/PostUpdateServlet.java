@@ -3,6 +3,7 @@ package post;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import thread.ThreadDetailsServlet;
 
@@ -21,9 +22,9 @@ import java.util.HashSet;
  * Created by anna on 17.10.15.
  */
 public class PostUpdateServlet extends HttpServlet {
-    private Connection con = null;
-    public PostUpdateServlet(Connection connect) {
-        con = connect;
+
+    public PostUpdateServlet() {
+
     }
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
@@ -36,7 +37,7 @@ public class PostUpdateServlet extends HttpServlet {
         result.add("response", responseJSON);
         result.add("response", responseJSON);
         Gson gson = new Gson();
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String new_message = json.get("message").getAsString();
             int curr_id = json.get("post").getAsInt();
@@ -45,8 +46,9 @@ public class PostUpdateServlet extends HttpServlet {
             stmt = con.prepareStatement(query_update);
             stmt.setString(1, new_message);
             stmt.setInt(2, curr_id);
-            if (stmt.executeUpdate() != 1) throw new java.lang.NullPointerException();
-            PostDetailsServlet.PostDet(curr_id, responseJSON, con, new HashSet<String>());
+            //if (stmt.executeUpdate() != 1) throw new java.lang.NullPointerException();
+            if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(3, result);
+            else PostDetailsServlet.PostDet(curr_id, responseJSON, con, new HashSet<String>());
 
         } catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);

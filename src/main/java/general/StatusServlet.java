@@ -2,6 +2,7 @@ package general;
 
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -18,9 +19,9 @@ import java.util.ResourceBundle;
 public class StatusServlet extends HttpServlet {
     private Statement stmt = null;
     private ResultSet rs = null;
-    private Connection con = null;
-    public StatusServlet(Connection connect) {
-        con = connect;
+
+    public StatusServlet() {
+
     }
 
     @Override
@@ -33,7 +34,7 @@ public class StatusServlet extends HttpServlet {
         result.addProperty("code", 0);
         result.add("response", responseJSON);
 
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             stmt = con.createStatement();
             rs = stmt.executeQuery("SELECT count(*) as status FROM User");
             while (rs.next()) {

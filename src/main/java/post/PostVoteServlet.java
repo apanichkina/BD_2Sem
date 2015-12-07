@@ -2,6 +2,8 @@ package post;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -18,9 +20,8 @@ import java.sql.SQLException;
  * Created by anna on 17.10.15.
  */
 public class PostVoteServlet extends HttpServlet {
-    private Connection con = null;
-    public PostVoteServlet(Connection connect) {
-        con = connect;
+    public PostVoteServlet() {
+
     }
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
@@ -32,40 +33,39 @@ public class PostVoteServlet extends HttpServlet {
         result.addProperty("code", 0);
         result.add("response", responseJSON);
         Gson gson = new Gson();
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             int postID = -1;
             postID = json.get("post").getAsInt();
-            if (postID < 0) throw new  java.lang.NullPointerException();
-            int vote = json.get("vote").getAsInt();
+            //if (postID < 0) throw new  java.lang.NullPointerException();
+            if (postID < 0) APIErrors.ErrorMessager(3, result);
+            {
+                int vote = json.get("vote").getAsInt();
 
-            String param = null;
-            if (vote > 0) param = "likes";
-            else param = "dislikes";
+                String param = null;
+                if (vote > 0) param = "likes";
+                else param = "dislikes";
 
-            String query = "UPDATE Post SET "+param+"="+param+"+1, points=points+"+vote+" WHERE id=?";
+                String query = "UPDATE Post SET " + param + "=" + param + "+1, points=points+" + vote + " WHERE id=?";
 
-            stmt = con.prepareStatement(query);
-            stmt.setInt(1, postID);
-            if (stmt.executeUpdate() != 1)  throw new java.lang.NullPointerException();
+                stmt = con.prepareStatement(query);
+                stmt.setInt(1, postID);
+                //if (stmt.executeUpdate() != 1)  throw new java.lang.NullPointerException();
+                if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(3, result);
+            }
         }
 
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            result.addProperty("code", 2);
-            result.addProperty("response", "err2");
+            APIErrors.ErrorMessager(2, result);
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "err3");
+            APIErrors.ErrorMessager(3, result);
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "err4");
-
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
             try {

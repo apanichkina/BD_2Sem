@@ -3,6 +3,7 @@ package post;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 import user.UserListPostServlet;
@@ -22,10 +23,9 @@ import java.util.HashSet;
  * Created by anna on 17.10.15.
  */
 public class PostListServlet extends HttpServlet {
-    private Connection con = null;
 
-    public PostListServlet(Connection connect) {
-        con = connect;
+
+    public PostListServlet() {
     }
     public static void PostList(int curr_value, String row_name, HttpServletRequest request, JsonArray list, Connection con, HashSet<String> related) throws IOException, SQLException {
 
@@ -74,13 +74,14 @@ public class PostListServlet extends HttpServlet {
         result.add("response", responseJSON);
         JsonArray list = new JsonArray();
         result.add("response", list);
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             String input_threadID = null;
             String curr_forum = request.getParameter("forum");
             if (curr_forum == null) {
                 input_threadID = request.getParameter("thread");
                 if (input_threadID == null) {
-                    throw new NullPointerException();
+                    //throw new NullPointerException();
+                    APIErrors.ErrorMessager(3, result); //TODO нужно ли это проверять?
                 }
                 else {
                     int threadID = Integer.parseInt(input_threadID);
@@ -89,9 +90,9 @@ public class PostListServlet extends HttpServlet {
             }
             else {
                 int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
-                if (forumID == -1)
-                    throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-                PostList(forumID, "forumID", request, list, con, new HashSet<String>());
+                //if (forumID == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+                if (forumID == -1) APIErrors.ErrorMessager(1, result);
+                else PostList(forumID, "forumID", request, list, con, new HashSet<String>());
             }
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {

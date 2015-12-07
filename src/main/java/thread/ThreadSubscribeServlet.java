@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -22,11 +23,10 @@ import java.util.Objects;
  * Created by anna on 15.10.15.
  */
 public class ThreadSubscribeServlet extends HttpServlet{
-    private Connection con = null;
+
     private String query = "";
     private Boolean isSubscribe = null;
-    public ThreadSubscribeServlet(Connection connect,String param) {
-        con = connect;
+    public ThreadSubscribeServlet(String param) {
         if (param.equals("subscribe")) {
             query = "INSERT INTO Subscription (userID,threadID) VALUES (?,?)";
             isSubscribe = true;
@@ -46,23 +46,28 @@ public class ThreadSubscribeServlet extends HttpServlet{
         result.addProperty("code", 0);
         result.add("response", responseJSON);
         Gson gson = new Gson();
-        try (PreparedStatement stmt = con.prepareStatement(query);) {
+        try (Connection con = Main.mainConnection.getConnection();PreparedStatement stmt = con.prepareStatement(query);) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String user = json.get("user").getAsString();
             int userID = UserDetailsServlet.GetID(user, "email", "User", con);
-            if (userID == -1) throw new java.lang.NullPointerException();
-            int threadID = json.get("thread").getAsInt();
+            //if (userID == -1) throw new java.lang.NullPointerException();
+            if (userID == -1) APIErrors.ErrorMessager(3, result);
+            else {
+                int threadID = json.get("thread").getAsInt();
+                //stmt = con.prepareStatement(query);
+                stmt.setInt(1, userID);
+                stmt.setInt(2, threadID);
 
-            //stmt = con.prepareStatement(query);
-            stmt.setInt(1, userID);
-            stmt.setInt(2, threadID);
-
-            if (stmt.executeUpdate() != 1)
-                if (isSubscribe) throw new SQLException();
-                    else  throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-
-            responseJSON.addProperty("thread", threadID);
-            responseJSON.addProperty("user", user);
+                if (stmt.executeUpdate() != 1) {
+//                if (isSubscribe) throw new SQLException();
+//                    else  throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+                    if (isSubscribe) APIErrors.ErrorMessager(4, result);
+                    else APIErrors.ErrorMessager(3, result);
+                } else {
+                    responseJSON.addProperty("thread", threadID);
+                    responseJSON.addProperty("user", user);
+                }
+            }
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);

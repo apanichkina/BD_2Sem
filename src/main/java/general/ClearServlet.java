@@ -2,6 +2,7 @@ package general;
 
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -15,10 +16,10 @@ import java.sql.*;
  * Created by anna on 15.10.15.
  */
 public class ClearServlet extends HttpServlet {
-    private Connection con = null;
 
-    public ClearServlet(Connection connect) {
-        con = connect;
+
+    public ClearServlet() {
+
     }
     private Statement stmt = null;
     private ResultSet rs = null;
@@ -28,7 +29,7 @@ public class ClearServlet extends HttpServlet {
         JsonObject result = new JsonObject();
         result.addProperty("code", 0);
         result.addProperty("response", "ОК");
-        try{
+        try(Connection con = Main.mainConnection.getConnection()) {
             stmt = con.createStatement();
             stmt.executeUpdate("SET foreign_key_checks = 0;");
             stmt.executeUpdate("TRUNCATE `forumdb`.`Follow`;");

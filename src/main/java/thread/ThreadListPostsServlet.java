@@ -3,6 +3,7 @@ package thread;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import post.PostDetailsServlet;
 import user.UserDetailsServlet;
@@ -23,9 +24,9 @@ import java.util.HashSet;
  * Created by anna on 18.10.15.
  */
 public class ThreadListPostsServlet extends HttpServlet {
-    private Connection con = null;
-    public ThreadListPostsServlet(Connection connect) {
-        con = connect;
+
+    public ThreadListPostsServlet() {
+
     }
 
     public static void ThreadListPosts (int curr_value, HttpServletRequest request, JsonArray list, Connection con, HashSet<String> related) throws com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException,IOException, SQLException {
@@ -95,11 +96,14 @@ public class ThreadListPostsServlet extends HttpServlet {
         result.add("response", responseJSON);
         JsonArray list = new JsonArray();
         result.add("response", list);
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             String input_threadID = request.getParameter("thread");
-            if (input_threadID == null) throw new NullPointerException();
-            int threadID = Integer.parseInt(input_threadID);
-            ThreadListPosts(threadID, request, list, con, new HashSet<String>());
+            //if (input_threadID == null) throw new NullPointerException();
+            if (input_threadID == null) APIErrors.ErrorMessager(3, result);
+            else {
+                int threadID = Integer.parseInt(input_threadID);
+                ThreadListPosts(threadID, request, list, con, new HashSet<String>());
+            }
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
             APIErrors.ErrorMessager(1, result);

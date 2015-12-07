@@ -2,6 +2,7 @@ package forum;
 
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import user.UserDetailsServlet;
@@ -24,9 +25,8 @@ import java.util.HashSet;
 
 
 public class ForumDetailsServlet extends HttpServlet {
-    private Connection con = null;
-    public ForumDetailsServlet(Connection connect) {
-        con = connect;
+    public ForumDetailsServlet() {
+
     }
 
     public PreparedStatement stmt = null;
@@ -81,7 +81,7 @@ public class ForumDetailsServlet extends HttpServlet {
             related = curr_related;
         }
 
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
 
             String curr_short_name = request.getParameter("forum");

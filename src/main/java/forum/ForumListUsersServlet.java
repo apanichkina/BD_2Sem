@@ -3,6 +3,7 @@ package forum;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import post.PostDetailsServlet;
 import thread.ThreadListServlet;
@@ -24,10 +25,9 @@ import java.util.HashSet;
  * Created by anna on 18.10.15.
  */
 public class ForumListUsersServlet extends HttpServlet {
-    private Connection con = null;
 
-    public ForumListUsersServlet(Connection connect) {
-        con = connect;
+    public ForumListUsersServlet() {
+
     }
     public static void UsersList(int curr_value, HttpServletRequest request, JsonArray list, Connection con) throws IOException, SQLException {
 
@@ -77,7 +77,7 @@ public class ForumListUsersServlet extends HttpServlet {
         result.add("response", responseJSON);
         JsonArray list = new JsonArray();
         result.add("response", list);
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             String curr_forum = request.getParameter("forum");
             if (curr_forum == null) throw new NullPointerException();
 

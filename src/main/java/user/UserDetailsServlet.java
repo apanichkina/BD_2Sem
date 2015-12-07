@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
+import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,10 +25,8 @@ import java.sql.SQLException;
  */
 public class UserDetailsServlet extends HttpServlet {
 
-    private Connection con = null;
     private String table_name = "";
-    public UserDetailsServlet(Connection connect, String table) {
-        con = connect;
+    public UserDetailsServlet(String table) {
         table_name = table;
     }
     public static PreparedStatement stmt = null;
@@ -129,30 +129,30 @@ public class UserDetailsServlet extends HttpServlet {
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
-        try {
+        result.add("response", responseJSON);
+        try(Connection con = Main.mainConnection.getConnection()) {
 
             String curr_email = request.getParameter("user");
-            if (curr_email == null) throw new NullPointerException();
-
-            int curr_id = GetID(curr_email, "email", table_name, con);
-            if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-
-            UsDet(curr_id,responseJSON, con);
-            result.add("response", responseJSON);
-
+            //if (curr_email == null) throw new NullPointerException();
+            if (curr_email == null) APIErrors.ErrorMessager(3,result);
+            else {
+                int curr_id = GetID(curr_email, "email", table_name, con);
+                //if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+                if (curr_id == -1) APIErrors.ErrorMessager(1, result);
+                else {
+                    UsDet(curr_id, responseJSON, con);
+                }
+            }
 
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            result.addProperty("code", 1);
-            result.addProperty("response", "error1");
+            APIErrors.ErrorMessager(1, result);
         }
         catch (java.lang.NullPointerException npEx) {
-            result.addProperty("code", 3);
-            result.addProperty("response", "er3");
+            APIErrors.ErrorMessager(3,result);
         }
         catch (SQLException sqlEx) {
-            result.addProperty("code", 4);
-            result.addProperty("response", "error4");
+            APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
 

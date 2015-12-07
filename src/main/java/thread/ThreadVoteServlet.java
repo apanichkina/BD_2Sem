@@ -3,6 +3,7 @@ package thread;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import user.UserDetailsServlet;
 
@@ -20,10 +21,8 @@ import java.sql.SQLException;
  * Created by anna on 16.10.15.
  */
 public class ThreadVoteServlet extends HttpServlet{
-    private Connection con = null;
-    public ThreadVoteServlet(Connection connect) {
-        con = connect;
-    }
+
+    public ThreadVoteServlet() {}
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
     @Override
@@ -34,7 +33,7 @@ public class ThreadVoteServlet extends HttpServlet{
         result.addProperty("code", 0);
         result.add("response", responseJSON);
         Gson gson = new Gson();
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             int threadID = json.get("thread").getAsInt();
             int vote = json.get("vote").getAsInt();
@@ -46,7 +45,8 @@ public class ThreadVoteServlet extends HttpServlet{
             String query = "UPDATE Thread SET "+param+"="+param+"+1, points=points+"+vote+" WHERE id=?";
             stmt = con.prepareStatement(query);
             stmt.setInt(1, threadID);
-            if (stmt.executeUpdate() != 1)  throw new java.lang.NullPointerException();
+            //if (stmt.executeUpdate() != 1)  throw new java.lang.NullPointerException();
+            if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(3, result);
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);

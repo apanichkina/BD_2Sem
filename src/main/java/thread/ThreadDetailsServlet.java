@@ -3,6 +3,7 @@ package thread;
 import com.google.gson.JsonObject;
 import forum.ForumDetailsServlet;
 import main.APIErrors;
+import main.Main;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import user.UserDetailsServlet;
@@ -23,9 +24,9 @@ import java.util.HashSet;
  * Created by anna on 16.10.15.
  */
 public class ThreadDetailsServlet extends HttpServlet {
-    private Connection con = null;
-    public ThreadDetailsServlet(Connection connect) {
-        con = connect;
+
+    public ThreadDetailsServlet() {
+
     }
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
@@ -88,11 +89,12 @@ public class ThreadDetailsServlet extends HttpServlet {
         JsonObject result = new JsonObject();
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
+        result.add("response", responseJSON);
 
         HashSet<String> base_related = new HashSet<>();
         base_related.add("user");
         base_related.add("forum");
-        try {
+        try(Connection con = Main.mainConnection.getConnection()) {
             String input_id = request.getParameter("thread");
             int curr_id = Integer.parseInt(input_id);//TODO проперить валидность
 
@@ -101,11 +103,12 @@ public class ThreadDetailsServlet extends HttpServlet {
                 HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
                 related = curr_related;
             }
-
-            if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
-
-            ThreadDet(curr_id, responseJSON, con, related);
-            result.add("response", responseJSON);
+            //if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
+            if (!base_related.containsAll(related)) APIErrors.ErrorMessager(3, result);
+            else {
+                ThreadDet(curr_id, responseJSON, con, related);
+                //result.add("response", responseJSON);
+            }
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);
