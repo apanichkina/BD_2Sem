@@ -38,6 +38,7 @@ public class ClearServlet extends HttpServlet {
             stmt.executeUpdate("TRUNCATE `forumdb`.`Post`;");
             stmt.executeUpdate("TRUNCATE `forumdb`.`Forum`;");
             stmt.executeUpdate("TRUNCATE `forumdb`.`Thread`;");
+            stmt.executeUpdate("TRUNCATE `forumdb`.`Forum_Authors`;");
             stmt.executeUpdate("SET foreign_key_checks = 1;");
         }
         catch (SQLException sqlEx) {

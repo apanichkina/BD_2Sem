@@ -52,6 +52,12 @@ public class UserUpdateServlet extends HttpServlet {
                 stmt.executeUpdate();
 
                 UserDetailsServlet.UsDet(curr_id, responseJSON, con);
+
+                String query_updateForumAuthors = "UPDATE Forum_Authors SET postAuthorName = ? WHERE postAuthorID= ?";
+                stmt = con.prepareStatement(query_updateForumAuthors);
+                stmt.setString(1, new_name);
+                stmt.setInt(2, curr_id);
+                stmt.executeUpdate();
             }
 
         }catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {

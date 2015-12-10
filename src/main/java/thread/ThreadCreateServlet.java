@@ -35,7 +35,7 @@ public class ThreadCreateServlet extends HttpServlet {
         result.add("response", responseJSON);
 
         Gson gson = new Gson();
-        String query = "INSERT INTO Thread (forumID,title,userID,date,message,slug,isClosed,isDelited) VALUES (?,?,?,?,?,?,?,?)";
+        String query = "INSERT INTO Thread (forumID,title,userID,date,message,slug,isClosed,isDelited,forum_short_name,user_email) VALUES (?,?,?,?,?,?,?,?,?,?)";
 
         try (Connection con = Main.mainConnection.getConnection()) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
@@ -67,6 +67,8 @@ public class ThreadCreateServlet extends HttpServlet {
             stmt.setString(6, slug);
             stmt.setBoolean(7, isClosed);
             stmt.setBoolean(8, isDelited);
+            stmt.setString(9, forum);
+            stmt.setString(10, user);
 
 
             //if (stmt.executeUpdate() != 1) throw new SQLException();

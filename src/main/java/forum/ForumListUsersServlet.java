@@ -26,9 +26,7 @@ import java.util.HashSet;
  */
 public class ForumListUsersServlet extends HttpServlet {
 
-    public ForumListUsersServlet() {
-
-    }
+    public ForumListUsersServlet() {}
     public static void UsersList(int curr_value, HttpServletRequest request, JsonArray list, Connection con) throws IOException, SQLException {
 
         String query_since = "";
@@ -36,7 +34,7 @@ public class ForumListUsersServlet extends HttpServlet {
         String query_limit = "";
         String since_id = request.getParameter("since_id");
         if (since_id != null) {
-            query_since = " and authorID >= " + since_id;
+            query_since = " and postAuthorID >= " + since_id;
         }
         String order = request.getParameter("order");
         if (order != null) {
@@ -47,8 +45,9 @@ public class ForumListUsersServlet extends HttpServlet {
             query_limit = " limit " + limit_input;
         }
 
-        String query_getID = "SELECT distinct authorID, name FROM Post LEFT JOIN User ON User.id = Post.authorID WHERE forumID = ?";
-        PreparedStatement stmt = con.prepareStatement(query_getID + query_since + " order by name "+query_order + query_limit);
+       // String query_getID = "SELECT distinct authorID FROM Post inner JOIN User ON User.id = Post.authorID WHERE forumID = ?";
+        String query_getID = "Select postAuthorID as authorID From Forum_Authors where forumID = ?";
+        PreparedStatement stmt = con.prepareStatement(query_getID + query_since + " order by postAuthorName "+query_order + query_limit);
         stmt.setInt(1, curr_value);
         ResultSet rs = stmt.executeQuery();
 

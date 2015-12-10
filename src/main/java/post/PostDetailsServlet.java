@@ -24,18 +24,25 @@ import java.util.HashSet;
 /**
  * Created by anna on 15.10.15.
  */
-public class PostDetailsServlet extends HttpServlet{
+public class PostDetailsServlet extends HttpServlet {
 
     public PreparedStatement stmt = null;
     public ResultSet rs = null;
 
-    public static void PostDet(int curr_id, @Nullable JsonObject responseJSON , Connection con, HashSet<String> related) throws com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException, IOException, SQLException {
+    public static void PostDet(int curr_id, @Nullable JsonObject responseJSON, Connection con, HashSet<String> related) throws com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException, IOException, SQLException {
 
-        Boolean allOK= false;
-        String query_postDetails = "SELECT Post.* , User.email, Forum.short_name FROM Post \n" +
-                "LEFT JOIN User ON User.id=Post.authorID \n" +
-                "LEFT JOIN Forum ON Forum.id=Post.forumID\n" +
-                "WHERE Post.id=?";
+        Boolean allOK = false;
+//        String query_postDetails = "SELECT Post.* , User.email, Forum.short_name FROM Post \n" +
+//                "LEFT JOIN User ON User.id=Post.authorID \n" +
+//                "LEFT JOIN Forum ON Forum.id=Post.forumID\n" +
+//                "WHERE Post.id=?";
+
+        String query_postDetails = "SELECT Post.* FROM Post WHERE id =?";
+//        String query_postDetails = "SELECT Post.date, Post.threadID, Post.message, Post.author_email, \n" +
+//                "Post.authorID, Post.forumID, Post.parentID, Post.isApproved, \n" +
+//                "Post.isDelited, Post.isEdited, \n" +
+//                "Post.isHighlighted, Post.isSpam, Post.likes, Post.dislikes, Post.points, \n" +
+//                "Forum.short_name FROM Post inner JOIN Forum ON Forum.id=Post.forumID WHERE Post.id =?";
         PreparedStatement stmt = con.prepareStatement(query_postDetails);
         stmt.setInt(1, curr_id);
         ResultSet rs = stmt.executeQuery();
@@ -47,21 +54,19 @@ public class PostDetailsServlet extends HttpServlet{
             if (related.contains("thread")) {
                 JsonObject thread_relatedJSON = new JsonObject();
                 ThreadDetailsServlet.ThreadDet(rs.getInt("threadID"), thread_relatedJSON, con, new HashSet<String>()); //TODO после создания Thread реализовать
-                responseJSON.add("thread",thread_relatedJSON);
-            }
-            else responseJSON.addProperty("thread", rs.getInt("threadID"));
-            if (related.contains("forum")){
+                responseJSON.add("thread", thread_relatedJSON);
+            } else responseJSON.addProperty("thread", rs.getInt("threadID"));
+            if (related.contains("forum")) {
                 JsonObject forum_relatedJSON = new JsonObject();
                 ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить как быстрее с join или так
-                responseJSON.add("forum",forum_relatedJSON);
-            }
-            else responseJSON.addProperty("forum", rs.getString("short_name"));
+                responseJSON.add("forum", forum_relatedJSON);
+            } else responseJSON.addProperty("forum", rs.getString("forum_short_name"));
 
             responseJSON.addProperty("message", rs.getString("message"));
 
             int parent = rs.getInt("parentID");
             if (parent == 0) responseJSON.addProperty("parent", rs.getString("parentID"));
-            else  responseJSON.addProperty("parent", parent);
+            else responseJSON.addProperty("parent", parent);
 
             responseJSON.addProperty("isApproved", rs.getBoolean("isApproved"));
             responseJSON.addProperty("isHighlighted", rs.getBoolean("isHighlighted"));
@@ -74,9 +79,8 @@ public class PostDetailsServlet extends HttpServlet{
             if (related.contains("user")) {
                 JsonObject user_relatedJSON = new JsonObject();
                 UserDetailsServlet.UsDet(rs.getInt("authorID"), user_relatedJSON, con);
-                responseJSON.add("user",user_relatedJSON);
-            }
-            else responseJSON.addProperty("user", rs.getString("email"));
+                responseJSON.add("user", user_relatedJSON);
+            } else responseJSON.addProperty("user", rs.getString("author_email"));
         }
 
         if (!allOK) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
@@ -85,15 +89,18 @@ public class PostDetailsServlet extends HttpServlet{
             if (stmt != null) {
                 stmt.close();
             }
-        } catch (SQLException se) {}
+        } catch (SQLException se) {
+        }
         try {
             if (rs != null) {
                 rs.close();
             }
-        } catch (SQLException se) {}
+        } catch (SQLException se) {
+        }
 
+    }
 
-    };
+    ;
 
     @Override
     public void doGet(@NotNull HttpServletRequest request,
@@ -107,7 +114,7 @@ public class PostDetailsServlet extends HttpServlet{
         base_related.add("forum");
         base_related.add("thread");
 
-        try(Connection con = Main.mainConnection.getConnection()) {
+        try (Connection con = Main.mainConnection.getConnection()) {
 
             String input_id = request.getParameter("post");
             int curr_id = Integer.parseInt(input_id);
@@ -121,16 +128,14 @@ public class PostDetailsServlet extends HttpServlet{
 
             if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
 
-            PostDet(curr_id,responseJSON, con, related);
+            PostDet(curr_id, responseJSON, con, related);
             result.add("response", responseJSON);
 
-        }catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
             APIErrors.ErrorMessager(1, result);
-        }
-        catch (java.lang.NullPointerException npEx) {
+        } catch (java.lang.NullPointerException npEx) {
             APIErrors.ErrorMessager(3, result);
-        }
-        catch (SQLException sqlEx) {
+        } catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         } finally {
@@ -138,12 +143,14 @@ public class PostDetailsServlet extends HttpServlet{
                 if (stmt != null) {
                     stmt.close();
                 }
-            } catch (SQLException se) {}
+            } catch (SQLException se) {
+            }
             try {
                 if (rs != null) {
                     rs.close();
                 }
-            } catch (SQLException se) {}
+            } catch (SQLException se) {
+            }
 
         }
         response.setContentType("application/json; charset=utf-8");

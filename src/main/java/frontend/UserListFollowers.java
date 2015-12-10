@@ -36,7 +36,6 @@ public class UserListFollowers extends HttpServlet {
             query = "SELECT followeeID, email FROM Follow LEFT JOIN User ON Follow.followeeID = User.id WHERE followerID= ?";
         }
     }
-    public static PreparedStatement stmt = null;
 
     @Override
     public void doGet(@NotNull HttpServletRequest request,
@@ -51,11 +50,12 @@ public class UserListFollowers extends HttpServlet {
         String query_since = "";
         String query_order = "desc";
         String query_limit = "";
-        ResultSet rs = null;
+
 
 
         try(Connection con = Main.mainConnection.getConnection();) {
-
+            ResultSet rs = null;
+            PreparedStatement stmt = null;
             String curr_email = request.getParameter("user");
             if (curr_email == null) throw new java.lang.NullPointerException();
             int curr_id = UserDetailsServlet.GetID(curr_email, "email", "User", con);
@@ -95,14 +95,14 @@ public class UserListFollowers extends HttpServlet {
             APIErrors.ErrorMessager(4,result);
             sqlEx.printStackTrace();
         } finally {
-            try{if (stmt != null){
-                stmt.close();
-            }
-            } catch(SQLException se) {}
-            try{if (rs != null){
-                rs.close();
-            }
-            } catch(SQLException se) {}
+//            try{if (stmt != null){
+//                stmt.close();
+//            }
+//            } catch(SQLException se) {}
+//            try{if (rs != null){
+//                rs.close();
+//            }
+//            } catch(SQLException se) {}
 
         }
         response.setContentType("application/json; charset=utf-8");

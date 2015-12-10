@@ -120,7 +120,25 @@ public class UserDetailsServlet extends HttpServlet {
         } catch(SQLException se) {}
         return curr_id;
     };
-
+    public static String GetName (int id,Connection con) throws SQLException {
+        String name = "";
+        String query_getID = "SELECT name FROM User WHERE id = ?";
+        PreparedStatement stmt = con.prepareStatement(query_getID);
+        stmt.setInt(1, id);
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            name = rs.getString("name");
+        }
+        try{if (stmt != null){
+            stmt.close();
+        }
+        } catch(SQLException se) {}
+        try{if (rs != null){
+            rs.close();
+        }
+        } catch(SQLException se) {}
+        return name;
+    };
     @Override
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {

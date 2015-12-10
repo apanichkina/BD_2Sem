@@ -19,14 +19,15 @@ import java.util.Formatter;
 /**
  * Created by anna on 15.10.15.
  */
-public class PostCreateServlet extends HttpServlet{
- //   private Connection con = null;
+public class PostCreateServlet extends HttpServlet {
+    //   private Connection con = null;
 //    public PostCreateServlet(Connection connect) {
 //        con = connect;
 //    }
- public PostCreateServlet() {}
+    public PostCreateServlet() {
+    }
 
-//    public PreparedStatement stmt = null;
+    //    public PreparedStatement stmt = null;
 //    public  ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
@@ -52,10 +53,10 @@ public class PostCreateServlet extends HttpServlet{
             String message = json.get("message").getAsString();
             String user = json.get("user").getAsString();
             int authorID = UserDetailsServlet.GetID(user, "email", "User", con);
-            if(authorID == -1) throw new java.lang.NullPointerException();
+            if (authorID == -1) throw new java.lang.NullPointerException();
             String forum = json.get("forum").getAsString();
             int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
-            if(forumID == -1) throw new java.lang.NullPointerException();
+            if (forumID == -1) throw new java.lang.NullPointerException();
 
             JsonElement new_isApproved = json.get("isApproved");
             if (new_isApproved != null) {
@@ -78,11 +79,11 @@ public class PostCreateServlet extends HttpServlet{
                 isDelited = new_isDelited.getAsBoolean();
             }
             JsonElement new_parentID = json.get("parent");
-            if (new_parentID!=null && !new_parentID.isJsonNull()) {
+            if (new_parentID != null && !new_parentID.isJsonNull()) {
                 parentID = new_parentID.getAsInt();
             }
-            String query_with_parent = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited,parentID) \n" +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,"+parentID+")";
+            String query_with_parent = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited,author_email,forum_short_name,parentID) \n" +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?," + parentID + ")";
             PreparedStatement stmt = con.prepareStatement(query_with_parent, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, date);
             stmt.setInt(2, threadID);
@@ -94,63 +95,76 @@ public class PostCreateServlet extends HttpServlet{
             stmt.setBoolean(8, isEdited);
             stmt.setBoolean(9, isSpam);
             stmt.setBoolean(10, isDelited);
+            stmt.setString(11, user);
+            stmt.setString(12,forum);
 
-            if (stmt.executeUpdate() != 1) throw new SQLException();
 
-            ResultSet rs = stmt.getGeneratedKeys();
-            rs.next();
-            int id = rs.getInt(1);
-            responseJSON.addProperty("id", id);
-            responseJSON.addProperty("date", date);
-            responseJSON.addProperty("thread", threadID);
-            responseJSON.addProperty("message", message);
-            responseJSON.addProperty("user", user);
-            responseJSON.addProperty("forum", forum);
-            responseJSON.addProperty("parent", parentID);
-            responseJSON.addProperty("isApproved", isApproved);
-            responseJSON.addProperty("isHighlighted", isHighlighted);
-            responseJSON.addProperty("isEdited", isEdited);
-            responseJSON.addProperty("isSpam", isSpam);
-            responseJSON.addProperty("isDeleted", isDelited);
-
-            if (parentID != null) {
-                String query_parentPost = "SELECT path as parent_path, count_of_children as pos, first_path as parent_firstPath FROM Post WHERE id = ?";
-                stmt = con.prepareStatement(query_parentPost);
-                stmt.setInt(1, parentID);
-                rs = stmt.executeQuery();
-
-                rs.next();
-                String parent_path = rs.getString("parent_path");
-                int position = rs.getInt("pos");
-                int parent_firstPath = rs.getInt("parent_firstPath");
-
-                Formatter position_fmt = new Formatter();
-                position_fmt.format("%07d", position + 1);
-                path = parent_path + position_fmt;
-                first_path = parent_firstPath;
-            }
+            if (stmt.executeUpdate() != 1) { APIErrors.ErrorMessager(4, result);}
             else {
-                first_path = id;
+                ResultSet rs = stmt.getGeneratedKeys();
+                rs.next();
+                int id = rs.getInt(1);
+                responseJSON.addProperty("id", id);
+                responseJSON.addProperty("date", date);
+                responseJSON.addProperty("thread", threadID);
+                responseJSON.addProperty("message", message);
+                responseJSON.addProperty("user", user);
+                responseJSON.addProperty("forum", forum);
+                responseJSON.addProperty("parent", parentID);
+                responseJSON.addProperty("isApproved", isApproved);
+                responseJSON.addProperty("isHighlighted", isHighlighted);
+                responseJSON.addProperty("isEdited", isEdited);
+                responseJSON.addProperty("isSpam", isSpam);
+                responseJSON.addProperty("isDeleted", isDelited);
+
+                if (parentID != null) {
+                    String query_parentPost = "SELECT path as parent_path, count_of_children as pos, first_path as parent_firstPath FROM Post WHERE id = ?";
+                    stmt = con.prepareStatement(query_parentPost);
+                    stmt.setInt(1, parentID);
+                    rs = stmt.executeQuery();
+
+                    rs.next();
+                    String parent_path = rs.getString("parent_path");
+                    int position = rs.getInt("pos");
+                    int parent_firstPath = rs.getInt("parent_firstPath");
+
+                    Formatter position_fmt = new Formatter();
+                    position_fmt.format("%07d", position + 1);
+                    path = parent_path + position_fmt;
+                    first_path = parent_firstPath;
+                } else {
+                    first_path = id;
+                }
+                String query_updatePath = "UPDATE Post SET path = ?, first_path = ? WHERE id = ?";
+                stmt = con.prepareStatement(query_updatePath);
+                stmt.setString(1, path);
+                stmt.setInt(2, first_path);
+                stmt.setInt(3, id);
+                stmt.executeUpdate();
+
+
+                String query_updatePostsCount = "UPDATE Thread SET posts = posts + 1 WHERE id = ?";
+                stmt = con.prepareStatement(query_updatePostsCount);
+                stmt.setInt(1, threadID);
+                stmt.executeUpdate();
+
+
+                String queryInsertForumAuthors = "Insert ignore into Forum_Authors (forumID, postAuthorID, postAuthorName) values (?,?,?)";
+                stmt = con.prepareStatement(queryInsertForumAuthors);
+                stmt.setInt(1,forumID);
+                stmt.setInt(2,authorID);
+                stmt.setString(3,UserDetailsServlet.GetName(authorID,con));
+                stmt.executeUpdate();
+
             }
-            String query_updatePath = "UPDATE Post SET path = ?, first_path = ? WHERE id = ?";
-            stmt = con.prepareStatement(query_updatePath);
-            stmt.setString(1, path);
-            stmt.setInt(2, first_path);
-            stmt.setInt(3, id);
-            stmt.executeUpdate();
 
-        }
-        catch (com.google.gson.JsonSyntaxException jsEx) {
+        } catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);
-        }
-        catch (java.lang.NullPointerException npEx) {
+        } catch (java.lang.NullPointerException npEx) {
             APIErrors.ErrorMessager(3, result);
-        }
-
-        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
             APIErrors.ErrorMessager(3, result);
-        }
-        catch (SQLException sqlEx) {
+        } catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         }
