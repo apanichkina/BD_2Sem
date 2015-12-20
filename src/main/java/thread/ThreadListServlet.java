@@ -91,13 +91,14 @@ public class ThreadListServlet extends HttpServlet {
                     APIErrors.ErrorMessager(3, result);//TODO это вообще нужно проверять?
                 }
                 else {
-                    int userID = UserDetailsServlet.GetID(input_user,"email", "User", con);
+                    //int userID = UserDetailsServlet.GetID(input_user,"email", "User", con);
+                    int userID = UserDetailsServlet.GetUserID(input_user, con);
                     ThreadList(userID, "userID", request, list, con, related);
                 }
             }
             else {
-                int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
-
+//                int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
+                int forumID = UserDetailsServlet.GetForumID(curr_forum, con);
                 if (forumID == -1) APIErrors.ErrorMessager(1, result);
                 else ThreadList(forumID, "forumID", request, list, con, related);
             }

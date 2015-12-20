@@ -50,9 +50,11 @@ public class UserUnfollow extends HttpServlet {
             String follower = json.get("follower").getAsString();
             String followee = json.get("followee").getAsString();
 
-            int follower_id = UserDetailsServlet.GetID(follower, "email", "User", con);
+//            int follower_id = UserDetailsServlet.GetID(follower, "email", "User", con);
+            int follower_id = UserDetailsServlet.GetUserID(follower, con);
             if (follower_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-            int followee_id = UserDetailsServlet.GetID(followee, "email", "User", con);
+//            int followee_id = UserDetailsServlet.GetID(followee, "email", "User", con);
+            int followee_id = UserDetailsServlet.GetUserID(followee, con);
             if (followee_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
             //stmt = con.prepareStatement(query);

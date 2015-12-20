@@ -41,7 +41,8 @@ public class ForumCreateServlet extends HttpServlet {
             String name = json.get("name").getAsString();
             String short_name = json.get("short_name").getAsString();
             String user = json.get("user").getAsString();
-            int userID = UserDetailsServlet.GetID(user, "email", "User", con);
+            //int userID = UserDetailsServlet.GetID(user, "email", "User", con);
+            int userID = UserDetailsServlet.GetUserID(user, con);
             if (userID == -1) throw new java.lang.NullPointerException();
 
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);

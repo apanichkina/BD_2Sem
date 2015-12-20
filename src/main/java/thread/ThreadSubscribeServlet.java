@@ -49,7 +49,8 @@ public class ThreadSubscribeServlet extends HttpServlet{
              PreparedStatement stmt = con.prepareStatement(query);) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String user = json.get("user").getAsString();
-            int userID = UserDetailsServlet.GetID(user, "email", "User", con);
+//            int userID = UserDetailsServlet.GetID(user, "email", "User", con);
+            int userID = UserDetailsServlet.GetUserID(user, con);
             if (userID == -1) APIErrors.ErrorMessager(3, result);
             else {
                 int threadID = json.get("thread").getAsInt();

@@ -43,7 +43,8 @@ public class ThreadDetailsServlet extends HttpServlet {
                 responseJSON.addProperty("posts", rs.getInt("posts"));
                 if (related.contains("forum")) {
                     JsonObject forum_relatedJSON = new JsonObject();
-                    ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>());
+                    //ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>());
+                    ForumDetailsServlet.ForumDetSN(rs.getString("forum_short_name"), forum_relatedJSON, con, new HashSet<String>());
                     responseJSON.add("forum", forum_relatedJSON);
                 } else responseJSON.addProperty("forum", rs.getString("forum_short_name"));
                 responseJSON.addProperty("title", rs.getString("title"));

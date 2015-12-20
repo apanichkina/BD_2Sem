@@ -21,8 +21,6 @@ import java.sql.*;
 
 public class UserCreateServlet  extends HttpServlet {
     public UserCreateServlet(){};
-    //public PreparedStatement stmt = null;
-    //public ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -38,7 +36,8 @@ public class UserCreateServlet  extends HttpServlet {
         String about = null;
         String query = "INSERT INTO User (email, username, about, name, isAnonymous) VALUES(?,?,?,?,?)";
 
-        try (Connection con = Main.mainConnection.getConnection();)  {
+        try (Connection con = Main.mainConnection.getConnection();
+             PreparedStatement stmt = con.prepareStatement(query);)  {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String email = json.get("email").getAsString();
             JsonElement new_anonymous = json.get("isAnonymous");
@@ -51,7 +50,6 @@ public class UserCreateServlet  extends HttpServlet {
                 name = json.get("name").getAsString();
             }
 
-            PreparedStatement stmt = con.prepareStatement(query);
             stmt.setString(1, email);
             stmt.setString(2, username);
             stmt.setString(3, about);
@@ -60,55 +58,25 @@ public class UserCreateServlet  extends HttpServlet {
 //            if (stmt.executeUpdate() != 1)
 //                throw new SQLException();
             stmt.executeUpdate();
-            int curr_id = UserDetailsServlet.GetID(email, "email", "User", con);
-           // if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+//            int curr_id = UserDetailsServlet.GetID(email, "email", "User", con);
+            int curr_id = UserDetailsServlet.GetUserID(email, con);
             if (curr_id == -1)  APIErrors.ErrorMessager(5, result);
             else {
                 UserDetailsServlet.UsDet(curr_id, responseJSON, con);
             }
-
-            /*
-            rs = stmt.getGeneratedKeys();
-            rs.next();
-
-            responseJSON.addProperty("id",rs.getInt(1));
-            responseJSON.addProperty("username",username);
-            responseJSON.addProperty("name",name);
-            responseJSON.addProperty("email",email);
-            responseJSON.addProperty("about",about);
-           */
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
-            //jsEx.printStackTrace();
             APIErrors.ErrorMessager(2, result);
         }
         catch (java.lang.NullPointerException npEx) {
-           // npEx.printStackTrace();
             APIErrors.ErrorMessager(3, result);
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
-            //icvEx.printStackTrace();
             APIErrors.ErrorMessager(5, result);
         }
         catch (SQLException sqlEx) {
-           // sqlEx.printStackTrace();
             APIErrors.ErrorMessager(4, result);
         }
-//        finally {
-//
-//            try {
-//               // con.close();
-//                if (stmt != null) {
-//                    stmt.close();
-//                }
-//            } catch (SQLException se)  {}
-//            try {
-//                if (rs != null) {
-//                    rs.close();
-//                }
-//            } catch (SQLException se) {}
-//        }
-
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
 

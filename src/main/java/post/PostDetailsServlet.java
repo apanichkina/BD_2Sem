@@ -46,7 +46,8 @@ public class PostDetailsServlet extends HttpServlet {
                 } else responseJSON.addProperty("thread", rs.getInt("threadID"));
                 if (related.contains("forum")) {
                     JsonObject forum_relatedJSON = new JsonObject();
-                    ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить как быстрее с join или так
+                   // ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить как быстрее с join или так
+                    ForumDetailsServlet.ForumDetSN(rs.getString("forum_short_name"), forum_relatedJSON, con, new HashSet<String>());
                     responseJSON.add("forum", forum_relatedJSON);
                 } else responseJSON.addProperty("forum", rs.getString("forum_short_name"));
 

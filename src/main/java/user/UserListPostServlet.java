@@ -42,7 +42,8 @@ public class UserListPostServlet extends HttpServlet {
             //if (curr_author_email == null) throw new NullPointerException();
             if (curr_author_email == null) APIErrors.ErrorMessager(3,result);
             else {
-                int curr_authorID = UserDetailsServlet.GetID(curr_author_email, "email", "User", con);
+//                int curr_authorID = UserDetailsServlet.GetID(curr_author_email, "email", "User", con);
+                int curr_authorID = UserDetailsServlet.GetUserID(curr_author_email, con);
                 //if (curr_authorID == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
                 if (curr_authorID == -1) APIErrors.ErrorMessager(1, result);
                 else PostListServlet.PostList(curr_authorID, "authorID", request, list, con, new HashSet<String>());

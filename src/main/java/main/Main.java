@@ -51,7 +51,7 @@ public class Main {
         Servlet status = new StatusServlet();
         Servlet clear = new ClearServlet();
 
-        Servlet user_details = new UserDetailsServlet("User");
+        Servlet user_details = new UserDetailsServlet();
         Servlet user_listFollowers = new UserListFollowers( "followers");
         Servlet user_listFollowing = new UserListFollowers("following");
         Servlet user_updateProfile = new UserUpdateServlet();

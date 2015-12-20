@@ -40,8 +40,9 @@ public class UserUpdateServlet extends HttpServlet {
             String new_name = json.get("name").getAsString();
             String curr_email = json.get("user").getAsString();
 
-            int curr_id = UserDetailsServlet.GetID(curr_email, "email", "User", con);
-           // if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+//            int curr_id = UserDetailsServlet.GetID(curr_email, "email", "User", con);
+            int curr_id = UserDetailsServlet.GetUserID(curr_email, con);
+
             if (curr_id == -1)  APIErrors.ErrorMessager(1, result);
             else {
                 String query_updateProfile = "UPDATE `User` SET about = ?, `name`= ? WHERE id= ?";

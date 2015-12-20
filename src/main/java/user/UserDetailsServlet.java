@@ -25,79 +25,58 @@ import java.sql.SQLException;
  */
 public class UserDetailsServlet extends HttpServlet {
 
-    private String table_name = "";
-    public UserDetailsServlet(String table) {
-        table_name = table;
-    }
-    public static PreparedStatement stmt = null;
-    public static ResultSet rs = null;
+    public UserDetailsServlet() {
 
+    }
     public static void UsDet(int curr_id, @Nullable JsonObject responseJSON , Connection con) throws IOException, SQLException {
 
         String query_userDetails = "SELECT * FROM User WHERE id=?";
-        PreparedStatement stmt = con.prepareStatement(query_userDetails);
-        stmt.setInt(1, curr_id);
-        //TODO проверить везде сработал ли запрос посредством проверки возвращаемого значения
-        ResultSet rs = stmt.executeQuery();
-        //TODO проверить валидность данных
-        while (rs.next()) {
-            responseJSON.addProperty("id", rs.getInt("id"));
-            responseJSON.addProperty("about", rs.getString("about"));
-            responseJSON.addProperty("email", rs.getString("email"));
-            responseJSON.addProperty("name", rs.getString("name"));
-            responseJSON.addProperty("username", rs.getString("username"));
-            responseJSON.addProperty("isAnonymous", rs.getBoolean("isAnonymous"));
-        }
-        //////3 qvery
-        String query_subscriptions = "SELECT threadID\n" + //TODO threadID
-                "FROM Subscription\n" +
-                "WHERE userID= ?";
-        stmt = con.prepareStatement(query_subscriptions);
-        stmt.setInt(1, curr_id);
-        rs = stmt.executeQuery();
-        JsonArray subscriptions_list = new JsonArray();
-        while (rs.next()) {
-            subscriptions_list.add(rs.getInt("threadID"));
-        }
-        responseJSON.add("subscriptions", subscriptions_list);
-        ////4 qvery
-        String query_following = "SELECT email \n" +
-                "FROM Follow \n" +
-                "LEFT JOIN User\n" +
-                "ON Follow.followeeID=User.id\n" +
-                "WHERE followerID= ?";
-        stmt = con.prepareStatement(query_following);
-        stmt.setInt(1, curr_id);
-        rs = stmt.executeQuery();
-        JsonArray following_list = new JsonArray();
-        while (rs.next()) {
-            following_list.add(rs.getString("email"));
-        }
-        responseJSON.add("following", following_list);
-        /////5 qvery
-        String query_followers = "SELECT email \n" +
-                "FROM Follow \n" +
-                "LEFT JOIN User\n" +
-                "ON Follow.followerID=User.id\n" +
-                "WHERE followeeID= ?";
-        stmt = con.prepareStatement(query_followers);
-        stmt.setInt(1, curr_id);
-        rs = stmt.executeQuery();
-        JsonArray followers_list = new JsonArray();
-        while (rs.next()) {
-            followers_list.add(rs.getString("email"));
-        }
-        responseJSON.add("followers", followers_list);
-        try {
-            if (stmt != null) {
-                stmt.close();
+        String query_subscriptions = "SELECT threadID FROM Subscription WHERE userID= ?";
+        String query_following = "SELECT email FROM Follow LEFT JOIN User ON Follow.followeeID=User.id WHERE followerID= ?";
+        String query_followers = "SELECT email FROM Follow LEFT JOIN User ON Follow.followerID=User.id WHERE followeeID= ?";
+        try(PreparedStatement stmt_main = con.prepareStatement(query_userDetails);
+        PreparedStatement stmt_subscription = con.prepareStatement(query_subscriptions);
+            PreparedStatement stmt_following = con.prepareStatement(query_following);
+            PreparedStatement stmt_followers = con.prepareStatement(query_followers);
+        ) {
+
+            stmt_main.setInt(1, curr_id);
+            //TODO проверить везде сработал ли запрос посредством проверки возвращаемого значения
+            ResultSet rs = stmt_main.executeQuery();
+            //TODO проверить валидность данных
+            while (rs.next()) {
+                responseJSON.addProperty("id", rs.getInt("id"));
+                responseJSON.addProperty("about", rs.getString("about"));
+                responseJSON.addProperty("email", rs.getString("email"));
+                responseJSON.addProperty("name", rs.getString("name"));
+                responseJSON.addProperty("username", rs.getString("username"));
+                responseJSON.addProperty("isAnonymous", rs.getBoolean("isAnonymous"));
             }
-        } catch (SQLException se) {}
-        try {
-            if (rs != null) {
-                rs.close();
+            //////3 qvery
+            stmt_subscription.setInt(1, curr_id);
+            rs = stmt_subscription.executeQuery();
+            JsonArray subscriptions_list = new JsonArray();
+            while (rs.next()) {
+                subscriptions_list.add(rs.getInt("threadID"));
             }
-        } catch (SQLException se) {}
+            responseJSON.add("subscriptions", subscriptions_list);
+            ////4 qvery
+            stmt_following.setInt(1, curr_id);
+            rs = stmt_following.executeQuery();
+            JsonArray following_list = new JsonArray();
+            while (rs.next()) {
+                following_list.add(rs.getString("email"));
+            }
+            responseJSON.add("following", following_list);
+            /////5 qvery
+            stmt_followers.setInt(1, curr_id);
+            rs = stmt_followers.executeQuery();
+            JsonArray followers_list = new JsonArray();
+            while (rs.next()) {
+                followers_list.add(rs.getString("email"));
+            }
+            responseJSON.add("followers", followers_list);
+        }
 
     };
 
@@ -110,6 +89,7 @@ public class UserDetailsServlet extends HttpServlet {
         while (rs.next()) {
             curr_id = rs.getInt("id");
         }
+
         try{if (stmt != null){
             stmt.close();
         }
@@ -120,23 +100,40 @@ public class UserDetailsServlet extends HttpServlet {
         } catch(SQLException se) {}
         return curr_id;
     };
+    public static int GetUserID (String row_value, Connection con) throws SQLException {
+        int curr_id = -1;
+        String query_getID = "SELECT id FROM User WHERE email = ?";
+        try(PreparedStatement stmt = con.prepareStatement(query_getID);) {
+            stmt.setString(1, row_value);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                curr_id = rs.getInt("id");
+            }
+        }
+        return curr_id;
+    };
+    public static int GetForumID (String row_value, Connection con) throws SQLException {
+        int curr_id = -1;
+        String query_getID = "SELECT id FROM Forum WHERE short_name = ?";
+        try(PreparedStatement stmt = con.prepareStatement(query_getID);) {
+            stmt.setString(1, row_value);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                curr_id = rs.getInt("id");
+            }
+        }
+        return curr_id;
+    };
     public static String GetName (int id,Connection con) throws SQLException {
         String name = "";
         String query_getID = "SELECT name FROM User WHERE id = ?";
-        PreparedStatement stmt = con.prepareStatement(query_getID);
-        stmt.setInt(1, id);
-        ResultSet rs = stmt.executeQuery();
-        while (rs.next()) {
-            name = rs.getString("name");
+        try( PreparedStatement stmt = con.prepareStatement(query_getID);) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                name = rs.getString("name");
+            }
         }
-        try{if (stmt != null){
-            stmt.close();
-        }
-        } catch(SQLException se) {}
-        try{if (rs != null){
-            rs.close();
-        }
-        } catch(SQLException se) {}
         return name;
     };
     @Override
@@ -151,11 +148,10 @@ public class UserDetailsServlet extends HttpServlet {
         try(Connection con = Main.mainConnection.getConnection()) {
 
             String curr_email = request.getParameter("user");
-            //if (curr_email == null) throw new NullPointerException();
             if (curr_email == null) APIErrors.ErrorMessager(3,result);
             else {
-                int curr_id = GetID(curr_email, "email", table_name, con);
-                //if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+//                int curr_id = GetID(curr_email, "email", table_name, con);
+                int curr_id = GetUserID(curr_email, con);
                 if (curr_id == -1) APIErrors.ErrorMessager(1, result);
                 else {
                     UsDet(curr_id, responseJSON, con);
@@ -172,17 +168,8 @@ public class UserDetailsServlet extends HttpServlet {
         catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
-        } finally {
-
-            try{if (stmt != null){
-                stmt.close();
-            }
-            } catch(SQLException se) {}
-            try{if (rs != null){
-                rs.close();
-            }
-            } catch(SQLException se) {}
         }
+
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
     }

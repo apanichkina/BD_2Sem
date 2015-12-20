@@ -63,7 +63,8 @@ public class PostCreateServlet extends HttpServlet {
             int authorID = UserDetailsServlet.GetID(user, "email", "User", con);
             if (authorID != -1) {
                 String forum = json.get("forum").getAsString();
-                int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
+//                int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
+                int forumID = UserDetailsServlet.GetForumID(forum, con);
                 if (forumID != -1) {
 
                     JsonElement new_isApproved = json.get("isApproved");

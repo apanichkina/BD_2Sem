@@ -45,7 +45,8 @@ public class ForumListThreadsServlet extends HttpServlet {
         try(Connection con = Main.mainConnection.getConnection()) {
             String curr_forum = request.getParameter("forum");
             if (curr_forum == null) throw new NullPointerException();
-            int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
+//            int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
+            int forumID = UserDetailsServlet.GetForumID(curr_forum, con);
             if (forumID == -1)
                 throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
             ThreadListServlet.ThreadList(forumID, "forumID", request, list, con, related);

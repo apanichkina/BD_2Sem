@@ -58,7 +58,8 @@ public class UserListFollowers extends HttpServlet {
             PreparedStatement stmt = null;
             String curr_email = request.getParameter("user");
             if (curr_email == null) throw new java.lang.NullPointerException();
-            int curr_id = UserDetailsServlet.GetID(curr_email, "email", "User", con);
+//            int curr_id = UserDetailsServlet.GetID(curr_email, "email", "User", con);
+            int curr_id = UserDetailsServlet.GetUserID(curr_email, con);
             if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
 
             String input_since_id = request.getParameter("since_id");

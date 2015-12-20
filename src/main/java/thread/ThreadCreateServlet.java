@@ -37,11 +37,13 @@ public class ThreadCreateServlet extends HttpServlet {
              PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String forum = json.get("forum").getAsString();
-            int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
+//            int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
+            int forumID = UserDetailsServlet.GetForumID(forum, con);
             if(forumID == -1) throw new java.lang.NullPointerException();
             String title = json.get("title").getAsString();
             String user = json.get("user").getAsString();
-            int userID = UserDetailsServlet.GetID(user, "email", "User", con);
+//            int userID = UserDetailsServlet.GetID(user, "email", "User", con);
+            int userID = UserDetailsServlet.GetUserID(user, con);
             if(userID == -1) throw new java.lang.NullPointerException();
             String date = json.get("date").getAsString();
             String message = json.get("message").getAsString();
