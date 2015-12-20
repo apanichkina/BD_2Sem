@@ -24,7 +24,6 @@ public class ThreadOpenServlet extends HttpServlet{
     private String query = "";
 
     public ThreadOpenServlet(String param) {
-
         if (param.equals("open")) {
             query = "UPDATE Thread SET isClosed=false WHERE id=?";
         }
@@ -32,8 +31,7 @@ public class ThreadOpenServlet extends HttpServlet{
             query = "UPDATE Thread SET isClosed=true WHERE id=?";
         }
     }
-    public PreparedStatement stmt = null;
-    public ResultSet rs = null;
+
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -42,16 +40,15 @@ public class ThreadOpenServlet extends HttpServlet{
         result.addProperty("code", 0);
         result.add("response", responseJSON);
         Gson gson = new Gson();
-        try(Connection con = Main.mainConnection.getConnection()) {
+        try(Connection con = Main.mainConnection.getConnection();
+        PreparedStatement stmt = con.prepareStatement(query)) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             int threadID = -1;
             threadID = json.get("thread").getAsInt();
-            //if (threadID < 0) throw new java.lang.NullPointerException(); //не удалосьполучить значение
+
             if (threadID < 0) APIErrors.ErrorMessager(3, result);
             else {
-                stmt = con.prepareStatement(query);
                 stmt.setInt(1, threadID);
-                //if (stmt.executeUpdate() != 1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
                 if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(1, result);
                 else responseJSON.addProperty("thread", threadID);
             }
@@ -68,17 +65,6 @@ public class ThreadOpenServlet extends HttpServlet{
         catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException se)  {}
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException se) {}
         }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);

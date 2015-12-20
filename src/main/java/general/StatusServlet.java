@@ -17,11 +17,8 @@ import java.util.ResourceBundle;
  * Created by anna on 15.10.15.
  */
 public class StatusServlet extends HttpServlet {
-    private Statement stmt = null;
-    private ResultSet rs = null;
 
     public StatusServlet() {
-
     }
 
     @Override
@@ -34,46 +31,42 @@ public class StatusServlet extends HttpServlet {
         result.addProperty("code", 0);
         result.add("response", responseJSON);
 
-        try(Connection con = Main.mainConnection.getConnection()) {
-            stmt = con.createStatement();
-            rs = stmt.executeQuery("SELECT count(*) as status FROM User");
+        try (Connection con = Main.mainConnection.getConnection();
+             PreparedStatement stmt_user = con.prepareStatement("SELECT count(*) as status FROM User");
+             PreparedStatement stmt_thread = con.prepareStatement("SELECT count(*) as status FROM Thread");
+             PreparedStatement stmt_forum = con.prepareStatement("SELECT count(*) as status FROM Forum");
+             PreparedStatement stmt_post = con.prepareStatement("SELECT count(*) as status FROM Post");
+        ) {
+            ResultSet rs = stmt_user.executeQuery();
             while (rs.next()) {
                 responseJSON.addProperty("user", rs.getInt("status"));
             }
-            rs = stmt.executeQuery("SELECT count(*) as status FROM Thread");
+            rs = stmt_thread.executeQuery();
             while (rs.next()) {
                 responseJSON.addProperty("thread", rs.getInt("status"));
             }
-            rs = stmt.executeQuery("SELECT count(*) as status FROM Forum");
+            rs = stmt_forum.executeQuery();
             while (rs.next()) {
                 responseJSON.addProperty("forum", rs.getInt("status"));
             }
-            rs = stmt.executeQuery("SELECT count(*) as status FROM Post");
+            rs = stmt_post.executeQuery();
             while (rs.next()) {
                 responseJSON.addProperty("post", rs.getInt("status"));
             }
 
-
         } catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
-        } finally {
-            try{if (stmt != null){
-                stmt.close();
-            }
-            } catch(SQLException se) {}
-            try{if (rs != null){
-                rs.close();
-            }
-            } catch(SQLException se) {}
         }
+//        finally {
+//            try{if (rs != null){
+//                rs.close();
+//            }
+//            } catch(SQLException se) {}
+//        }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
 
     }
-
-
-
-
 }
 

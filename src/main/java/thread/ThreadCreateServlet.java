@@ -19,13 +19,9 @@ import java.sql.*;
  * Created by anna on 15.10.15.
  */
 public class ThreadCreateServlet extends HttpServlet {
-    //private Connection con = null;
-    //public ThreadCreateServlet(Connection connect) {
-    //    con = connect;
-    //}
+
     public ThreadCreateServlet(){}
-    //public PreparedStatement stmt = null;
-    //public ResultSet rs = null;
+
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -37,7 +33,8 @@ public class ThreadCreateServlet extends HttpServlet {
         Gson gson = new Gson();
         String query = "INSERT INTO Thread (forumID,title,userID,date,message,slug,isClosed,isDelited,forum_short_name,user_email) VALUES (?,?,?,?,?,?,?,?,?,?)";
 
-        try (Connection con = Main.mainConnection.getConnection()) {
+        try (Connection con = Main.mainConnection.getConnection();
+             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             String forum = json.get("forum").getAsString();
             int forumID = UserDetailsServlet.GetID(forum, "short_name", "Forum", con);
@@ -57,8 +54,6 @@ public class ThreadCreateServlet extends HttpServlet {
             if (new_isDelited != null) {
                 isDelited = new_isDelited.getAsBoolean();
             }
-
-            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             stmt.setInt(1, forumID);
             stmt.setString(2, title);
             stmt.setInt(3, userID);
@@ -70,10 +65,8 @@ public class ThreadCreateServlet extends HttpServlet {
             stmt.setString(9, forum);
             stmt.setString(10, user);
 
-
-            //if (stmt.executeUpdate() != 1) throw new SQLException();
-            if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(4, result);
-            else {
+            if (stmt.executeUpdate() == 1)
+            {
                 ResultSet rs = stmt.getGeneratedKeys();
                 rs.next();
                 responseJSON.addProperty("id", rs.getInt(1));
@@ -85,9 +78,7 @@ public class ThreadCreateServlet extends HttpServlet {
                 responseJSON.addProperty("message", message);
                 responseJSON.addProperty("slug", slug);
                 responseJSON.addProperty("isDeleted", isDelited);
-            }
-
-
+            }else APIErrors.ErrorMessager(4, result);
         }
         catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);

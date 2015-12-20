@@ -24,10 +24,6 @@ public class ThreadRestoreServlet extends HttpServlet {
 
     public ThreadRestoreServlet() {
     }
-
-    public PreparedStatement stmt = null;
-    public ResultSet rs = null;
-
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -37,20 +33,15 @@ public class ThreadRestoreServlet extends HttpServlet {
         result.add("response", responseJSON);
         Gson gson = new Gson();
         String query = "UPDATE Thread SET isDelited=false WHERE id=?";
-        //String query_postsRestore = "UPDATE Post SET isDelited=false,delete_count=delete_count-1 WHERE threadID=?";
-        try (Connection con = Main.mainConnection.getConnection()) {
+
+        try (Connection con = Main.mainConnection.getConnection();
+        PreparedStatement stmt = con.prepareStatement(query);) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             int threadID = json.get("thread").getAsInt();
-
-            stmt = con.prepareStatement(query);
             stmt.setInt(1, threadID);
-            //if (stmt.executeUpdate() != 1) throw new java.lang.NullPointerException();
             if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(3, result);
             else {
                 PostRemoveServlet.PostRemoveRestoreThread("restore", threadID, con, result, responseJSON);
-//                stmt = con.prepareStatement(query_postsRestore);
-//                stmt.setInt(1, threadID);
-//                stmt.executeUpdate();
                 responseJSON.addProperty("thread", threadID);
             }
         } catch (com.google.gson.JsonSyntaxException jsEx) {
@@ -62,19 +53,6 @@ public class ThreadRestoreServlet extends HttpServlet {
         } catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException se) {
-            }
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException se) {
-            }
         }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);

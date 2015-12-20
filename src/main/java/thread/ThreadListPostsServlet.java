@@ -33,7 +33,6 @@ public class ThreadListPostsServlet extends HttpServlet {
         String query_since = "";
         String query_order = "desc";
         String query_limit = "";
-        String query_sort = "";
         int counter = 1;
         int step = 0;
 

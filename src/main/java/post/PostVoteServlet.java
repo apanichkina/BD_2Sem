@@ -31,24 +31,28 @@ public class PostVoteServlet extends HttpServlet {
         result.addProperty("code", 0);
         result.add("response", responseJSON);
         Gson gson = new Gson();
-        PreparedStatement stmt = null;
-        try(Connection con = Main.mainConnection.getConnection()) {
+        String query_likes = "UPDATE Post SET likes = likes+1, points=points+? WHERE id=?";
+        String query_dislikes = "UPDATE Post SET dislikes = dislikes+1, points=points+? WHERE id=?";
+
+        try(Connection con = Main.mainConnection.getConnection();
+        PreparedStatement stmt_likes = con.prepareStatement(query_likes);
+        PreparedStatement stmt_dislikes = con.prepareStatement(query_dislikes);) {
             JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
             int postID = 0;
             postID = json.get("post").getAsInt();
             if (postID < 1) APIErrors.ErrorMessager(3, result);
             else {
                 int vote = json.get("vote").getAsInt();
-
-                String param = null;
-                if (vote > 0) param = "likes";
-                else param = "dislikes";
-
-                String query = "UPDATE Post SET " + param + "=" + param + "+1, points=points+" + vote + " WHERE id=?";
-
-                stmt = con.prepareStatement(query);
-                stmt.setInt(1, postID);
-                if (stmt.executeUpdate() != 1) APIErrors.ErrorMessager(3, result);
+                if (vote > 0) {
+                    stmt_likes.setInt(1, vote);
+                    stmt_likes.setInt(2, postID);
+                    if (stmt_likes.executeUpdate() != 1) APIErrors.ErrorMessager(3, result);
+                }
+                else {
+                    stmt_dislikes.setInt(1, vote);
+                    stmt_dislikes.setInt(2, postID);
+                    if (stmt_dislikes.executeUpdate() != 1) APIErrors.ErrorMessager(3, result);
+                }
             }
         }
 

@@ -28,66 +28,54 @@ public class ThreadDetailsServlet extends HttpServlet {
     public ThreadDetailsServlet() {
     }
 
-    public PreparedStatement stmt = null;
-    public ResultSet rs = null;
-
-    public static void ThreadDet(int curr_id, @Nullable JsonObject responseJSON, Connection con, HashSet<String> related) throws IOException, SQLException {
-//        String query_threadDetails = "SELECT Thread.* , User.email, Forum.short_name FROM Thread  \n" +
-//                "LEFT JOIN User ON User.id=Thread.userID \n" +
-//                "LEFT JOIN Forum ON Forum.id=Thread.forumID \n" +
-//                "WHERE Thread.id=?";
+    public static boolean ThreadDet(int curr_id, @Nullable JsonObject responseJSON, Connection con, HashSet<String> related) throws IOException, SQLException {
+        Boolean allOK = false;
         String query_threadDetails = "SELECT Thread.* FROM Thread WHERE Thread.id=?";
-        PreparedStatement stmt = con.prepareStatement(query_threadDetails);
-        stmt.setInt(1, curr_id);
-        ResultSet rs = stmt.executeQuery();
 
-        while (rs.next()) {
-            responseJSON.addProperty("id", curr_id);
-            responseJSON.addProperty("date", rs.getString("date"));
-            responseJSON.addProperty("posts", rs.getInt("posts"));
-            if (related.contains("forum")) {
-                JsonObject forum_relatedJSON = new JsonObject();
-                ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>()); //TODO проверить как быстрее с join или так
-                responseJSON.add("forum", forum_relatedJSON);
-            } else responseJSON.addProperty("forum", rs.getString("forum_short_name"));
-            responseJSON.addProperty("title", rs.getString("title"));
-            responseJSON.addProperty("message", rs.getString("message"));
-            responseJSON.addProperty("slug", rs.getString("slug"));
-            responseJSON.addProperty("isClosed", rs.getBoolean("isClosed"));
-            responseJSON.addProperty("isDeleted", rs.getBoolean("isDelited"));
-            responseJSON.addProperty("likes", rs.getInt("likes"));
-            responseJSON.addProperty("dislikes", rs.getInt("dislikes"));
-            responseJSON.addProperty("points", rs.getInt("points"));
+        try (PreparedStatement stmt = con.prepareStatement(query_threadDetails)) {
+            stmt.setInt(1, curr_id);
+            ResultSet rs = stmt.executeQuery();
 
-            if (related.contains("user")) {
-                JsonObject user_relatedJSON = new JsonObject();
-                UserDetailsServlet.UsDet(rs.getInt("userID"), user_relatedJSON, con);
-                responseJSON.add("user", user_relatedJSON);
-            } else responseJSON.addProperty("user", rs.getString("user_email"));
-        }
-        //TODO исправить
-        /*
-        String query_posts = "SELECT count(id) FROM Post WHERE threadID=? and isDelited=false";
-        stmt = con.prepareStatement(query_posts);
-        stmt.setInt(1, curr_id);
-        rs = stmt.executeQuery();
-        rs.next();
-        int posts = rs.getInt(1);
-        responseJSON.addProperty("posts", posts);
-        */
+            while (rs.next()) {
+                allOK = true;
+                responseJSON.addProperty("id", curr_id);
+                responseJSON.addProperty("date", rs.getString("date"));
+                responseJSON.addProperty("posts", rs.getInt("posts"));
+                if (related.contains("forum")) {
+                    JsonObject forum_relatedJSON = new JsonObject();
+                    ForumDetailsServlet.ForumDet(rs.getInt("forumID"), forum_relatedJSON, con, new HashSet<String>());
+                    responseJSON.add("forum", forum_relatedJSON);
+                } else responseJSON.addProperty("forum", rs.getString("forum_short_name"));
+                responseJSON.addProperty("title", rs.getString("title"));
+                responseJSON.addProperty("message", rs.getString("message"));
+                responseJSON.addProperty("slug", rs.getString("slug"));
+                responseJSON.addProperty("isClosed", rs.getBoolean("isClosed"));
+                responseJSON.addProperty("isDeleted", rs.getBoolean("isDelited"));
+                responseJSON.addProperty("likes", rs.getInt("likes"));
+                responseJSON.addProperty("dislikes", rs.getInt("dislikes"));
+                responseJSON.addProperty("points", rs.getInt("points"));
 
-        try {
-            if (stmt != null) {
-                stmt.close();
+                if (related.contains("user")) {
+                    JsonObject user_relatedJSON = new JsonObject();
+                    UserDetailsServlet.UsDet(rs.getInt("userID"), user_relatedJSON, con);
+                    responseJSON.add("user", user_relatedJSON);
+                } else responseJSON.addProperty("user", rs.getString("user_email"));
             }
-        } catch (SQLException se) {
         }
-        try {
-            if (rs != null) {
-                rs.close();
-            }
-        } catch (SQLException se) {
-        }
+
+//        try {
+//            if (stmt != null) {
+//                stmt.close();
+//            }
+//        } catch (SQLException se) {
+//        }
+//        try {
+//            if (rs != null) {
+//                rs.close();
+//            }
+//        } catch (SQLException se) {
+//        }
+        return allOK;
     }
 
     @Override
@@ -103,18 +91,16 @@ public class ThreadDetailsServlet extends HttpServlet {
         base_related.add("forum");
         try (Connection con = Main.mainConnection.getConnection()) {
             String input_id = request.getParameter("thread");
-            int curr_id = Integer.parseInt(input_id);//TODO проперить валидность
+            int curr_id = Integer.parseInt(input_id);
 
             HashSet<String> related = new HashSet<>();
             if (request.getParameter("related") != null) {
                 HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
                 related = curr_related;
             }
-            //if (!base_related.containsAll(related)) throw new java.lang.NullPointerException();
             if (!base_related.containsAll(related)) APIErrors.ErrorMessager(3, result);
             else {
-                ThreadDet(curr_id, responseJSON, con, related);
-                //result.add("response", responseJSON);
+                if (!ThreadDet(curr_id, responseJSON, con, related)) APIErrors.ErrorMessager(3, result);
             }
         } catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);
@@ -123,21 +109,22 @@ public class ThreadDetailsServlet extends HttpServlet {
         } catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException se) {
-            }
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException se) {
-            }
-
         }
+//        finally {
+//            try {
+//                if (stmt != null) {
+//                    stmt.close();
+//                }
+//            } catch (SQLException se) {
+//            }
+//            try {
+//                if (rs != null) {
+//                    rs.close();
+//                }
+//            } catch (SQLException se) {
+//            }
+//
+//        }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
     }

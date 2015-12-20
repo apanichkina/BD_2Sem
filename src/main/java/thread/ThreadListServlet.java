@@ -88,7 +88,6 @@ public class ThreadListServlet extends HttpServlet {
             if (curr_forum == null) {
                 input_user = request.getParameter("user");
                 if (input_user == null) {
-                    //throw new NullPointerException();
                     APIErrors.ErrorMessager(3, result);//TODO это вообще нужно проверять?
                 }
                 else {
@@ -98,7 +97,7 @@ public class ThreadListServlet extends HttpServlet {
             }
             else {
                 int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
-               // if (forumID == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+
                 if (forumID == -1) APIErrors.ErrorMessager(1, result);
                 else ThreadList(forumID, "forumID", request, list, con, related);
             }
