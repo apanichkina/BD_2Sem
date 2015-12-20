@@ -18,16 +18,11 @@ import java.sql.*;
  * Created by anna on 15.10.15.
  */
 public class ForumCreateServlet extends HttpServlet {
- //   private Connection con = null;
+
     private String query = "INSERT INTO Forum (name,short_name,userID) VALUES (?,?,?)";
 
     public ForumCreateServlet(){}
-//    public ForumCreateServlet(Connection connect) {
-//        con = connect;
-//    }
 
-  //  public PreparedStatement stmt = null;
-  //  public ResultSet rs = null;
     @Override
     public void doPost(@NotNull HttpServletRequest request,
                        @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -42,28 +37,23 @@ public class ForumCreateServlet extends HttpServlet {
             String short_name = json.get("short_name").getAsString();
             String user = json.get("user").getAsString();
             //int userID = UserDetailsServlet.GetID(user, "email", "User", con);
+            try(PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);){
             int userID = UserDetailsServlet.GetUserID(user, con);
-            if (userID == -1) throw new java.lang.NullPointerException();
+            if (userID != -1) {
+                stmt.setString(1, name);
+                stmt.setString(2, short_name);
+                stmt.setInt(3, userID);
+                stmt.executeUpdate();
+                ResultSet rs = stmt.getGeneratedKeys();
+                rs.next();
 
-            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            stmt.setString(1, name);
-            stmt.setString(2, short_name);
-            stmt.setInt(3, userID);
+                responseJSON.addProperty("id", rs.getInt(1));
+                responseJSON.addProperty("name", name);
+                responseJSON.addProperty("short_name", short_name);
+                responseJSON.addProperty("user", user);
+            } else APIErrors.ErrorMessager(3, result);
 
-//            if (stmt.executeUpdate() != 1) throw new SQLException();
-//            rs = stmt.getGeneratedKeys();
-//            rs.next();
-
-            stmt.executeUpdate();
-            ResultSet rs = stmt.getGeneratedKeys();
-            rs.next();
-
-            responseJSON.addProperty("id", rs.getInt(1));
-            responseJSON.addProperty("name", name);
-            responseJSON.addProperty("short_name", short_name);
-            responseJSON.addProperty("user", user);
-
-        }
+        }}
         catch (com.google.gson.JsonSyntaxException jsEx) {
             APIErrors.ErrorMessager(2, result);
         }
@@ -77,19 +67,6 @@ public class ForumCreateServlet extends HttpServlet {
             APIErrors.ErrorMessager(4, result);
             sqlEx.printStackTrace();
         }
-//        finally {
-//            try {
-//                if (stmt != null) {
-//                    stmt.close();
-//                }
-//            } catch (SQLException se) {}
-//            try {
-//                if (rs != null) {
-//                    rs.close();
-//                }
-//            } catch (SQLException se) {}
-//        }
-
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
 

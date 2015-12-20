@@ -33,7 +33,6 @@ public class PostUpdateServlet extends HttpServlet {
         JsonObject responseJSON = new JsonObject();
         result.addProperty("code", 0);
         result.add("response", responseJSON);
-        result.add("response", responseJSON);
         Gson gson = new Gson();
         String query_update = "UPDATE `Post` SET message = ? WHERE id= ?";
         try(Connection con = Main.mainConnection.getConnection();

@@ -55,11 +55,6 @@ public class PostListServlet extends HttpServlet {
             }
         }
 
-//        try {
-//            if (rs != null) {
-//                rs.close();
-//            }
-//        } catch (SQLException se) {}
     }
 
     @Override

@@ -26,7 +26,9 @@ import java.util.HashSet;
  */
 public class ForumListUsersServlet extends HttpServlet {
 
-    public ForumListUsersServlet() {}
+    public ForumListUsersServlet() {
+    }
+
     public static void UsersList(int curr_value, HttpServletRequest request, JsonArray list, Connection con) throws IOException, SQLException {
 
         String query_since = "";
@@ -45,9 +47,9 @@ public class ForumListUsersServlet extends HttpServlet {
             query_limit = " limit " + limit_input;
         }
 
-       // String query_getID = "SELECT distinct authorID FROM Post inner JOIN User ON User.id = Post.authorID WHERE forumID = ?";
+        // String query_getID = "SELECT distinct authorID FROM Post inner JOIN User ON User.id = Post.authorID WHERE forumID = ?";
         String query_getID = "Select postAuthorID as authorID From Forum_Authors where forumID = ?";
-        PreparedStatement stmt = con.prepareStatement(query_getID + query_since + " order by postAuthorName "+query_order + query_limit);
+        PreparedStatement stmt = con.prepareStatement(query_getID + query_since + " order by postAuthorName " + query_order + query_limit);
         stmt.setInt(1, curr_value);
         ResultSet rs = stmt.executeQuery();
 
@@ -60,13 +62,16 @@ public class ForumListUsersServlet extends HttpServlet {
             if (stmt != null) {
                 stmt.close();
             }
-        } catch (SQLException se) {}
+        } catch (SQLException se) {
+        }
         try {
             if (rs != null) {
                 rs.close();
             }
-        } catch (SQLException se) {}
+        } catch (SQLException se) {
+        }
     }
+
     @Override
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -76,16 +81,15 @@ public class ForumListUsersServlet extends HttpServlet {
         result.add("response", responseJSON);
         JsonArray list = new JsonArray();
         result.add("response", list);
-        try(Connection con = Main.mainConnection.getConnection()) {
+        try (Connection con = Main.mainConnection.getConnection()) {
             String curr_forum = request.getParameter("forum");
-            if (curr_forum == null) throw new NullPointerException();
+            if (curr_forum != null) {
 //            int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
-            int forumID = UserDetailsServlet.GetForumID(curr_forum, con);
-            if (forumID == -1)
-                throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-            UsersList(forumID, request, list, con);
-        }
-        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+                int forumID = UserDetailsServlet.GetForumID(curr_forum, con);
+                if (forumID == -1) APIErrors.ErrorMessager(1, result);
+                else UsersList(forumID, request, list, con);
+            } else APIErrors.ErrorMessager(3, result);
+        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
             APIErrors.ErrorMessager(1, result);
         } catch (java.lang.NullPointerException npEx) {
             APIErrors.ErrorMessager(3, result);

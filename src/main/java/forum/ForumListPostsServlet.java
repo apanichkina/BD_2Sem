@@ -38,18 +38,19 @@ public class ForumListPostsServlet extends HttpServlet {
         result.add("response", list);
         try(Connection con = Main.mainConnection.getConnection()) {
             String curr_forum = request.getParameter("forum");
-            if (curr_forum == null) throw new NullPointerException();
+            if (curr_forum != null) {
             //int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
             int forumID = UserDetailsServlet.GetForumID(curr_forum, con);
-            if (forumID == -1)
-                    throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            if (forumID > 0) {
 
-            HashSet<String> related = new HashSet<>();
-            if (request.getParameter("related") != null) {
-                HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
-                related = curr_related;
-            }
-            PostListServlet.PostList(forumID, "forumID", request, list, con, related);
+                HashSet<String> related = new HashSet<>();
+                if (request.getParameter("related") != null) {
+                    HashSet<String> curr_related = new HashSet<String>(Arrays.asList(request.getParameterValues("related")));
+                    related = curr_related;
+                }
+                PostListServlet.PostList(forumID, "forumID", request, list, con, related);
+            } else  APIErrors.ErrorMessager(1, result);
+        } else APIErrors.ErrorMessager(3, result);
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
             APIErrors.ErrorMessager(1, result);

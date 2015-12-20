@@ -57,10 +57,10 @@ public class UserListFollowers extends HttpServlet {
             ResultSet rs = null;
             PreparedStatement stmt = null;
             String curr_email = request.getParameter("user");
-            if (curr_email == null) throw new java.lang.NullPointerException();
+            if (curr_email != null){
 //            int curr_id = UserDetailsServlet.GetID(curr_email, "email", "User", con);
             int curr_id = UserDetailsServlet.GetUserID(curr_email, con);
-            if (curr_id == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            if (curr_id != -1) {
 
             String input_since_id = request.getParameter("since_id");
             if (input_since_id != null) {
@@ -85,6 +85,9 @@ public class UserListFollowers extends HttpServlet {
                 list.add(responceJS);
             }
 
+        } else APIErrors.ErrorMessager(1,result);
+            } else APIErrors.ErrorMessager(3,result);
+
         }
         catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
             APIErrors.ErrorMessager(1,result);
@@ -95,16 +98,6 @@ public class UserListFollowers extends HttpServlet {
         catch (SQLException sqlEx) {
             APIErrors.ErrorMessager(4,result);
             sqlEx.printStackTrace();
-        } finally {
-//            try{if (stmt != null){
-//                stmt.close();
-//            }
-//            } catch(SQLException se) {}
-//            try{if (rs != null){
-//                rs.close();
-//            }
-//            } catch(SQLException se) {}
-
         }
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
