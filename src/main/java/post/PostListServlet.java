@@ -23,10 +23,9 @@ import java.util.HashSet;
  * Created by anna on 17.10.15.
  */
 public class PostListServlet extends HttpServlet {
-
-
     public PostListServlet() {
     }
+
     public static void PostList(int curr_value, String row_name, HttpServletRequest request, JsonArray list, Connection con, HashSet<String> related) throws IOException, SQLException {
 
         String query_since = "";
@@ -44,27 +43,25 @@ public class PostListServlet extends HttpServlet {
         if (limit_input != null) {
             query_limit = " limit " + limit_input;
         }
-        String query_getID = "SELECT id FROM Post where "+row_name+" = ?" + query_since + " order by date "+query_order + query_limit;
+        String query_getID = "SELECT id FROM Post where " + row_name + " = ?" + query_since + " order by date " + query_order + query_limit;
 
-        PreparedStatement stmt = con.prepareStatement(query_getID);
-        stmt.setInt(1, curr_value);
-        ResultSet rs = stmt.executeQuery();
-        while (rs.next()) {
-            JsonObject responceJS = new JsonObject();
-            PostDetailsServlet.PostDet(rs.getInt("id"), responceJS, con, related);
-            list.add(responceJS);
+        try (PreparedStatement stmt = con.prepareStatement(query_getID);) {
+            stmt.setInt(1, curr_value);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                JsonObject responceJS = new JsonObject();
+                PostDetailsServlet.PostDet(rs.getInt("id"), responceJS, con, related);
+                list.add(responceJS);
+            }
         }
-        try {
-            if (stmt != null) {
-                stmt.close();
-            }
-        } catch (SQLException se) {}
-        try {
-            if (rs != null) {
-                rs.close();
-            }
-        } catch (SQLException se) {}
+
+//        try {
+//            if (rs != null) {
+//                rs.close();
+//            }
+//        } catch (SQLException se) {}
     }
+
     @Override
     public void doGet(@NotNull HttpServletRequest request,
                       @NotNull HttpServletResponse response) throws ServletException, IOException {
@@ -74,28 +71,23 @@ public class PostListServlet extends HttpServlet {
         result.add("response", responseJSON);
         JsonArray list = new JsonArray();
         result.add("response", list);
-        try(Connection con = Main.mainConnection.getConnection()) {
+        try (Connection con = Main.mainConnection.getConnection()) {
             String input_threadID = null;
             String curr_forum = request.getParameter("forum");
             if (curr_forum == null) {
                 input_threadID = request.getParameter("thread");
                 if (input_threadID == null) {
-                    //throw new NullPointerException();
                     APIErrors.ErrorMessager(3, result); //TODO нужно ли это проверять?
-                }
-                else {
+                } else {
                     int threadID = Integer.parseInt(input_threadID);
                     PostList(threadID, "threadID", request, list, con, new HashSet<String>());
                 }
-            }
-            else {
+            } else {
                 int forumID = UserDetailsServlet.GetID(curr_forum, "short_name", "Forum", con);
-                //if (forumID == -1) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
                 if (forumID == -1) APIErrors.ErrorMessager(1, result);
                 else PostList(forumID, "forumID", request, list, con, new HashSet<String>());
             }
-        }
-        catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
+        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException icvEx) {
             APIErrors.ErrorMessager(1, result);
         } catch (java.lang.NullPointerException npEx) {
             APIErrors.ErrorMessager(3, result);

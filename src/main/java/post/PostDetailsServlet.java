@@ -26,26 +26,15 @@ import java.util.HashSet;
  */
 public class PostDetailsServlet extends HttpServlet {
 
-
-    public static boolean PostDet(int curr_id, @Nullable JsonObject responseJSON, Connection con, HashSet<String> related) throws com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException, IOException, SQLException {
+//TODO в местах вызова проверить возвращаемое значкние
+    public static boolean PostDet(int curr_id, @Nullable JsonObject responseJSON, Connection con, HashSet<String> related)
+            throws com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException, IOException, SQLException {
 
         Boolean allOK = false;
-//        String query_postDetails = "SELECT Post.* , User.email, Forum.short_name FROM Post \n" +
-//                "LEFT JOIN User ON User.id=Post.authorID \n" +
-//                "LEFT JOIN Forum ON Forum.id=Post.forumID\n" +
-//                "WHERE Post.id=?";
-
         String query_postDetails = "SELECT Post.* FROM Post WHERE id =?";
-//        String query_postDetails = "SELECT Post.date, Post.threadID, Post.message, Post.author_email, \n" +
-//                "Post.authorID, Post.forumID, Post.parentID, Post.isApproved, \n" +
-//                "Post.isDelited, Post.isEdited, \n" +
-//                "Post.isHighlighted, Post.isSpam, Post.likes, Post.dislikes, Post.points, \n" +
-//                "Forum.short_name FROM Post inner JOIN Forum ON Forum.id=Post.forumID WHERE Post.id =?";
-        try(PreparedStatement stmt = con.prepareStatement(query_postDetails);)
-        {
+        try (PreparedStatement stmt = con.prepareStatement(query_postDetails);) {
             stmt.setInt(1, curr_id);
             ResultSet rs = stmt.executeQuery();
-
             while (rs.next()) {
                 allOK = true;
                 responseJSON.addProperty("id", curr_id);
@@ -81,20 +70,15 @@ public class PostDetailsServlet extends HttpServlet {
                     responseJSON.add("user", user_relatedJSON);
                 } else responseJSON.addProperty("user", rs.getString("author_email"));
             }
-
-            //if (!allOK) throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
         }
-
 //        try {
 //            if (rs != null) {
 //                rs.close();
 //            }
 //        } catch (SQLException se) {
 //        }
-            return allOK;
+        return allOK;
     }
-
-    ;
 
     @Override
     public void doGet(@NotNull HttpServletRequest request,
@@ -109,10 +93,8 @@ public class PostDetailsServlet extends HttpServlet {
         base_related.add("thread");
 
         try (Connection con = Main.mainConnection.getConnection()) {
-
             String input_id = request.getParameter("post");
             int curr_id = Integer.parseInt(input_id);
-
 
             HashSet<String> related = new HashSet<>();
             if (request.getParameter("related") != null) {

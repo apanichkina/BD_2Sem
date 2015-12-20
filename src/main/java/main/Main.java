@@ -46,7 +46,6 @@ public class Main {
 
         connectionPool = new DBPool();
         mainConnection = connectionPool.createSource();
-
         AccountService accountService = new AccountService();
 
         Servlet status = new StatusServlet();

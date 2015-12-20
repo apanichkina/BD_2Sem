@@ -90,9 +90,7 @@ public class PostCreateServlet extends HttpServlet {
                     if (new_parentID != null && !new_parentID.isJsonNull()) {
                         parentID = new_parentID.getAsInt();
                     }
-//            String query_with_parent = "INSERT INTO Post (date,threadID,message,authorID,forumID,isApproved,isHighlighted,isEdited,isSpam,isDelited,author_email,forum_short_name,parentID) \n" +
-//                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?," + parentID + ")";
-//            stmt = con.prepareStatement(query_with_parent, Statement.RETURN_GENERATED_KEYS);
+
                     stmt_main.setString(1, date);
                     stmt_main.setInt(2, threadID);
                     stmt_main.setString(3, message);
@@ -105,6 +103,8 @@ public class PostCreateServlet extends HttpServlet {
                     stmt_main.setBoolean(10, isDelited);
                     stmt_main.setString(11, user);
                     stmt_main.setString(12, forum);
+
+
 
                     if (new_parentID != null && !new_parentID.isJsonNull()) {
                         parentID = new_parentID.getAsInt();
@@ -133,8 +133,6 @@ public class PostCreateServlet extends HttpServlet {
                         responseJSON.addProperty("isDeleted", isDelited);
 
                         if (parentID != null) {
-//                    String query_parentPost = "SELECT path as parent_path, count_of_children as pos, first_path as parent_firstPath FROM Post WHERE id = ?";
-//                    stmt_parentPost = con.prepareStatement(query_parentPost);
                             stmt_parentPost.setInt(1, parentID);
                             rs = stmt_parentPost.executeQuery();
 
@@ -150,22 +148,14 @@ public class PostCreateServlet extends HttpServlet {
                         } else {
                             first_path = id;
                         }
-//                String query_updatePath = "UPDATE Post SET path = ?, first_path = ? WHERE id = ?";
-//                stmt_updatePath = con.prepareStatement(query_updatePath);
                         stmt_updatePath.setString(1, path);
                         stmt_updatePath.setInt(2, first_path);
                         stmt_updatePath.setInt(3, id);
                         stmt_updatePath.executeUpdate();
 
-
-//                String query_updatePostsCount = "UPDATE Thread SET posts = posts + 1 WHERE id = ?";
-//                stmt_updatePostsCount = con.prepareStatement(query_updatePostsCount);
                         stmt_updatePostsCount.setInt(1, threadID);
                         stmt_updatePostsCount.executeUpdate();
 
-
-//                String queryInsertForumAuthors = "Insert ignore into Forum_Authors (forumID, postAuthorID, postAuthorName) values (?,?,?)";
-//                stmt_InsertForumAuthors = con.prepareStatement(queryInsertForumAuthors);
                         stmt_InsertForumAuthors.setInt(1, forumID);
                         stmt_InsertForumAuthors.setInt(2, authorID);
                         stmt_InsertForumAuthors.setString(3, UserDetailsServlet.GetName(authorID, con));
@@ -192,10 +182,7 @@ public class PostCreateServlet extends HttpServlet {
 //                }
 //            } catch (SQLException se) {}
 //        }
-
         response.setContentType("application/json; charset=utf-8");
         response.getWriter().println(result);
-
-
     }
 }
