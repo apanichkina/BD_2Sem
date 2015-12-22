@@ -90,6 +90,9 @@ public class PostCreateServlet extends HttpServlet {
                     JsonElement new_parentID = json.get("parent");
                     if (new_parentID != null && !new_parentID.isJsonNull()) {
                         parentID = new_parentID.getAsInt();
+                        stmt_main.setInt(13, parentID);
+                    } else {
+                        stmt_main.setNull(13, Types.INTEGER);
                     }
 
                     stmt_main.setString(1, date);
@@ -104,16 +107,6 @@ public class PostCreateServlet extends HttpServlet {
                     stmt_main.setBoolean(10, isDelited);
                     stmt_main.setString(11, user);
                     stmt_main.setString(12, forum);
-
-
-
-                    if (new_parentID != null && !new_parentID.isJsonNull()) {
-                        parentID = new_parentID.getAsInt();
-                        stmt_main.setInt(13, parentID);
-                    } else {
-                        stmt_main.setNull(13, Types.INTEGER);
-                    }
-
 
                     if (stmt_main.executeUpdate() == 1) {
 
